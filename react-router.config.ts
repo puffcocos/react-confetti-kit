@@ -1,7 +1,9 @@
-import type { Config } from "@react-router/dev/config";
+import type { Config } from '@react-router/dev/config'
 
 export default {
-  // Config options...
-  // Server-side render by default, to enable SPA mode set this to `false`
-  ssr: true,
-} satisfies Config;
+  /**
+   * @see https://github.com/remix-run/react-router/issues/13446#issuecomment-2822107203
+   */
+  basename: '/confetti-editor/',
+  ssr: false,
+} satisfies Config

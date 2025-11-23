@@ -1,17 +1,20 @@
 {
-  "name": "confetti-web",
+  "name": "confetti-editor",
   "private": true,
   "type": "module",
+  "homepage": "https://유저네임.github.io/confetti-editor/",
   "scripts": {
     "build": "react-router build",
     "dev": "react-router dev",
     "start": "react-router-serve ./build/server/index.js",
-    "typecheck": "react-router typegen && tsc"
+    "typecheck": "react-router typegen && tsc",
+     "deploy": "gh-pages -d build"
   },
   "dependencies": {
     "@react-router/node": "^7.9.2",
     "@react-router/serve": "^7.9.2",
     "canvas-confetti": "^1.9.4",
+    "gh-pages": "^6.3.0",
     "isbot": "^5.1.31",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",

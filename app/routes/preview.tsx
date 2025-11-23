@@ -261,6 +261,10 @@ export default function Preview() {
   const [copiedMain, setCopiedMain] = useState(false)
   const [copiedPresetIndex, setCopiedPresetIndex] = useState<number | null>(null)
 
+  // 프리셋 수정 모드
+  const [editingPresetIndex, setEditingPresetIndex] = useState<number | null>(null)
+  const [editingEffectIndex, setEditingEffectIndex] = useState<number | null>(null)
+
   // 코드 미리보기 생성
   const generateCodePreview = () => {
     if (presetOptions.length === 0) {
@@ -284,6 +288,54 @@ export default function Preview() {
       console.error('복사 실패:', err)
       alert('클립보드 복사에 실패했습니다.')
     }
+  }
+
+  // 효과를 우측 설정 메뉴로 로드
+  const loadEffectToSettings = (presetIndex: number, effectIndex: number) => {
+    const effect = customPresets[presetIndex].options[effectIndex]
+
+    setParticleCount(effect.particleCount ?? DEFAULT_VALUES.particleCount)
+    setSpread(effect.spread ?? DEFAULT_VALUES.spread)
+    setStartVelocity(effect.startVelocity ?? DEFAULT_VALUES.startVelocity)
+    setDecay(effect.decay ?? DEFAULT_VALUES.decay)
+    setGravity(effect.gravity ?? DEFAULT_VALUES.gravity)
+    setTicks(effect.ticks ?? DEFAULT_VALUES.ticks)
+    setOriginX(effect.origin?.x ?? DEFAULT_VALUES.originX)
+    setOriginY(effect.origin?.y ?? DEFAULT_VALUES.originY)
+    setAngle(effect.angle ?? DEFAULT_VALUES.angle)
+    setScalar(effect.scalar ?? DEFAULT_VALUES.scalar)
+
+    if (effect.colors && effect.colors.length > 0) {
+      setCustomColors(effect.colors)
+      setUseCustomColors(true)
+    }
+
+    if (effect.shapes && effect.shapes.length > 0) {
+      setShapes(effect.shapes as string[])
+    }
+
+    setEditingPresetIndex(presetIndex)
+    setEditingEffectIndex(effectIndex)
+  }
+
+  // 현재 설정으로 효과 업데이트
+  const updateEffectInPreset = () => {
+    if (editingPresetIndex === null || editingEffectIndex === null) return
+
+    const updatedPresets = [...customPresets]
+    updatedPresets[editingPresetIndex].options[editingEffectIndex] = currentOptions
+
+    setCustomPresets(updatedPresets)
+    setEditingPresetIndex(null)
+    setEditingEffectIndex(null)
+    alert('효과가 업데이트되었습니다!')
+  }
+
+  // 수정 모드 취소
+  const cancelEditMode = () => {
+    setEditingPresetIndex(null)
+    setEditingEffectIndex(null)
+    resetToDefaults()
   }
 
   return (
@@ -435,6 +487,38 @@ export default function Preview() {
                           </p>
                         </div>
                       )}
+
+                      {/* 효과 목록 및 수정 */}
+                      <div className="px-3 pb-3">
+                        <div className="border-t border-gray-200 pt-3">
+                          <label className="block text-xs font-medium text-gray-700 mb-2">
+                            효과 목록 ({preset.options.length}개)
+                          </label>
+                          <div className="space-y-2">
+                            {preset.options.map((option, effectIndex) => (
+                              <div
+                                key={effectIndex}
+                                className={`flex items-center gap-2 p-2 rounded border transition-colors ${
+                                  editingPresetIndex === index && editingEffectIndex === effectIndex
+                                    ? 'bg-yellow-50 border-yellow-400'
+                                    : 'bg-gray-50 border-gray-300'
+                                }`}
+                              >
+                                <span className="flex-1 text-xs text-gray-700 font-mono truncate">
+                                  효과 {effectIndex + 1}: {option.particleCount}개 파티클, {option.spread}° 퍼짐
+                                </span>
+                                <button
+                                  onClick={() => loadEffectToSettings(index, effectIndex)}
+                                  className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-xs font-medium"
+                                  title="이 효과를 우측 설정 메뉴로 불러와 수정합니다"
+                                >
+                                  {editingPresetIndex === index && editingEffectIndex === effectIndex ? '수정 중' : '수정'}
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -460,6 +544,36 @@ export default function Preview() {
                 🔄 기본값으로 리셋
               </button>
             </div>
+
+            {/* 수정 모드 안내 */}
+            {editingPresetIndex !== null && editingEffectIndex !== null && (
+              <div className="mb-4 p-4 bg-yellow-50 border border-yellow-300 rounded-lg">
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <div>
+                    <h3 className="text-sm font-semibold text-yellow-900 mb-1">
+                      🔧 수정 모드
+                    </h3>
+                    <p className="text-xs text-yellow-800">
+                      "{customPresets[editingPresetIndex].name}" 프리셋의 효과 {editingEffectIndex + 1}을(를) 수정하고 있습니다
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={updateEffectInPreset}
+                    className="flex-1 px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors text-sm font-medium"
+                  >
+                    ✓ 업데이트
+                  </button>
+                  <button
+                    onClick={cancelEditMode}
+                    className="flex-1 px-3 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors text-sm font-medium"
+                  >
+                    ✕ 취소
+                  </button>
+                </div>
+              </div>
+            )}
 
             <div className="space-y-4 mb-6">
               {/* Particle Count */}

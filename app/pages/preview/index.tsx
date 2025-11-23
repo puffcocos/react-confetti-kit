@@ -6,7 +6,7 @@ import { PresetSection } from './PresetSection'
 import { CustomPresetSection } from './CustomPresetSection'
 import { SettingsPanel } from './SettingsPanel'
 import { DEFAULT_VALUES } from './constants'
-import type { CustomPreset } from './types'
+import type { CustomPreset, CustomColorPreset } from './types'
 
 /**
  * Confetti 미리보기 페이지
@@ -31,6 +31,10 @@ export function PreviewPage() {
   const [useCustomColors, setUseCustomColors] = useState(false)
   const [customColors, setCustomColors] = useState<string[]>(['#ff0000', '#00ff00', '#0000ff'])
   const [colorInput, setColorInput] = useState('#ff0000')
+
+  // 커스텀 색상 프리셋
+  const [customColorPresets, setCustomColorPresets] = useState<CustomColorPreset[]>([])
+  const [colorPresetName, setColorPresetName] = useState('')
 
   // 모양 옵션
   const [shapes, setShapes] = useState<string[]>(['square', 'circle'])
@@ -210,6 +214,39 @@ export function PreviewPage() {
     resetToDefaults()
   }
 
+  // 커스텀 색상 프리셋 저장
+  const saveCustomColorPreset = () => {
+    if (!colorPresetName.trim()) {
+      alert('색상 프리셋 이름을 입력해주세요')
+      return
+    }
+
+    if (customColors.length === 0) {
+      alert('최소 1개 이상의 색상을 추가해주세요')
+      return
+    }
+
+    const newColorPreset: CustomColorPreset = {
+      name: colorPresetName,
+      colors: [...customColors],
+    }
+
+    setCustomColorPresets([...customColorPresets, newColorPreset])
+    setColorPresetName('')
+    alert(`"${colorPresetName}" 색상 프리셋이 저장되었습니다! (${customColors.length}개 색상)`)
+  }
+
+  // 커스텀 색상 프리셋 적용
+  const applyCustomColorPreset = (preset: CustomColorPreset) => {
+    setCustomColors(preset.colors)
+    setUseCustomColors(true)
+  }
+
+  // 커스텀 색상 프리셋 삭제
+  const deleteCustomColorPreset = (index: number) => {
+    setCustomColorPresets(customColorPresets.filter((_, i) => i !== index))
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-8">
       <div className="max-w-6xl mx-auto">
@@ -265,6 +302,8 @@ export function PreviewPage() {
             currentOptions={currentOptions}
             presetOptions={presetOptions}
             copiedMain={copiedMain}
+            customColorPresets={customColorPresets}
+            colorPresetName={colorPresetName}
             onParticleCountChange={setParticleCount}
             onSpreadChange={setSpread}
             onStartVelocityChange={setStartVelocity}
@@ -284,6 +323,10 @@ export function PreviewPage() {
             onCancelEditMode={cancelEditMode}
             onFireCustom={fireCustom}
             onCopyToClipboard={copyToClipboard}
+            onColorPresetNameChange={setColorPresetName}
+            onSaveCustomColorPreset={saveCustomColorPreset}
+            onApplyCustomColorPreset={applyCustomColorPreset}
+            onDeleteCustomColorPreset={deleteCustomColorPreset}
           />
         </div>
 

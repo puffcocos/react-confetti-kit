@@ -88,15 +88,11 @@ export const OPTION_INFO: Record<string, OptionInfo> = {
 } as const
 
 /**
- * 색상 프리셋
+ * 기본 색상 프리셋
  */
 export const COLOR_PRESETS = {
   rainbow: ['#FF0000', '#FF7F00', '#FFFF00', '#00FF00', '#0000FF', '#4B0082', '#9400D3'],
   pastel: ['#FFB6C1', '#FFC0CB', '#FFD1DC', '#FFE4E1', '#E0BBE4', '#D4A5A5'],
   gold: ['#FFD700', '#FFA500', '#FF8C00', '#DAA520', '#B8860B'],
   ocean: ['#006994', '#0099CC', '#66CCFF', '#99CCFF', '#CCE5FF'],
-  fire: ['#FF0000', '#FF4500', '#FF6347', '#FF7F50', '#FFA500'],
-  forest: ['#228B22', '#32CD32', '#90EE90', '#98FB98', '#00FF00'],
-  purple: ['#9370DB', '#8A2BE2', '#9932CC', '#BA55D3', '#DA70D6'],
-  sunset: ['#FF6B6B', '#FFA07A', '#FFD93D', '#6BCF7F', '#4ECDC4'],
 } as const

@@ -6,6 +6,15 @@ import type { Options as ConfettiOptions } from 'canvas-confetti'
 export interface CustomPreset {
   name: string
   options: ConfettiOptions[]
+  duration?: number // 애니메이션 지속 시간 (밀리초)
+}
+
+/**
+ * 커스텀 색상 프리셋 타입
+ */
+export interface CustomColorPreset {
+  name: string
+  colors: string[]
 }
 
 /**

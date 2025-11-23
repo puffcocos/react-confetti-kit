@@ -1,5 +1,5 @@
 import type { Options as ConfettiOptions } from 'canvas-confetti'
-import type { CustomPreset } from './types'
+import type { CustomPreset, CustomColorPreset } from './types'
 import { DEFAULT_VALUES, OPTION_INFO, COLOR_PRESETS } from './constants'
 
 interface SettingsPanelProps {
@@ -29,6 +29,10 @@ interface SettingsPanelProps {
   presetOptions: ConfettiOptions[]
   copiedMain: boolean
 
+  // 커스텀 색상 프리셋
+  customColorPresets: CustomColorPreset[]
+  colorPresetName: string
+
   // 상태 업데이트 함수
   onParticleCountChange: (value: number) => void
   onSpreadChange: (value: number) => void
@@ -51,6 +55,10 @@ interface SettingsPanelProps {
   onCancelEditMode: () => void
   onFireCustom: () => void
   onCopyToClipboard: (text: string, type: 'main' | number) => Promise<void>
+  onColorPresetNameChange: (value: string) => void
+  onSaveCustomColorPreset: () => void
+  onApplyCustomColorPreset: (preset: CustomColorPreset) => void
+  onDeleteCustomColorPreset: (index: number) => void
 }
 
 /**
@@ -78,6 +86,8 @@ export function SettingsPanel(props: SettingsPanelProps) {
     currentOptions,
     presetOptions,
     copiedMain,
+    customColorPresets,
+    colorPresetName,
     onParticleCountChange,
     onSpreadChange,
     onStartVelocityChange,
@@ -97,6 +107,10 @@ export function SettingsPanel(props: SettingsPanelProps) {
     onCancelEditMode,
     onFireCustom,
     onCopyToClipboard,
+    onColorPresetNameChange,
+    onSaveCustomColorPreset,
+    onApplyCustomColorPreset,
+    onDeleteCustomColorPreset,
   } = props
 
   const addColor = () => {
@@ -312,9 +326,11 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
           {useCustomColors && (
             <div className="space-y-3">
-              {/* 색상 프리셋 */}
+              {/* 기본 색상 프리셋 */}
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-2">색상 프리셋</label>
+                <label className="block text-xs font-medium text-gray-600 mb-2">
+                  기본 색상 프리셋
+                </label>
                 <div className="grid grid-cols-2 gap-2">
                   {Object.keys(COLOR_PRESETS).map((presetName) => (
                     <button
@@ -326,6 +342,62 @@ export function SettingsPanel(props: SettingsPanelProps) {
                     </button>
                   ))}
                 </div>
+              </div>
+
+              {/* 커스텀 색상 프리셋 */}
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-2">
+                  커스텀 색상 프리셋
+                </label>
+
+                {/* 프리셋 저장 */}
+                <div className="flex gap-2 mb-2">
+                  <input
+                    type="text"
+                    value={colorPresetName}
+                    onChange={(e) => onColorPresetNameChange(e.target.value)}
+                    placeholder="프리셋 이름"
+                    className="flex-1 px-2 py-1 border border-gray-300 rounded text-xs text-gray-800"
+                  />
+                  <button
+                    onClick={onSaveCustomColorPreset}
+                    className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition-colors text-xs font-medium"
+                  >
+                    저장
+                  </button>
+                </div>
+
+                {/* 저장된 커스텀 프리셋 목록 */}
+                {customColorPresets.length > 0 && (
+                  <div className="space-y-1">
+                    {customColorPresets.map((preset, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center gap-2 p-2 bg-white rounded border border-gray-300"
+                      >
+                        <button
+                          onClick={() => onApplyCustomColorPreset(preset)}
+                          className="flex-1 text-left text-xs font-semibold text-gray-800 hover:text-gray-900"
+                        >
+                          {preset.name}
+                          <span className="ml-1 text-gray-600">({preset.colors.length}개)</span>
+                        </button>
+                        <button
+                          onClick={() => onDeleteCustomColorPreset(index)}
+                          className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors text-xs"
+                        >
+                          삭제
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {customColorPresets.length === 0 && (
+                  <p className="text-xs text-gray-400 italic">
+                    현재 색상 조합을 저장하여 나중에 재사용하세요
+                  </p>
+                )}
               </div>
 
               {/* 현재 색상 목록 */}

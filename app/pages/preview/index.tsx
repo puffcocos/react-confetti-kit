@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { Options as ConfettiOptions } from 'canvas-confetti'
 import { confettiPresets } from '~/components/presets'
 import { useConfetti } from '~/components/use-confetti'
+import { useLocalStorage } from '~/hooks/use-local-storage'
 import { PresetSection } from './PresetSection'
 import { CustomPresetSection } from './CustomPresetSection'
 import { SettingsPanel } from './SettingsPanel'
@@ -33,15 +34,21 @@ export function PreviewPage() {
   const [customColors, setCustomColors] = useState<string[]>(['#ff0000', '#00ff00', '#0000ff'])
   const [colorInput, setColorInput] = useState('#ff0000')
 
-  // 커스텀 색상 프리셋
-  const [customColorPresets, setCustomColorPresets] = useState<CustomColorPreset[]>([])
+  // 커스텀 색상 프리셋 (로컬 스토리지 동기화)
+  const [customColorPresets, setCustomColorPresets] = useLocalStorage<CustomColorPreset[]>(
+    'confetti-custom-color-presets',
+    [],
+  )
   const [colorPresetName, setColorPresetName] = useState('')
 
   // 모양 옵션
   const [shapes, setShapes] = useState<string[]>(['square', 'circle'])
 
-  // 커스텀 프리셋 저장
-  const [customPresets, setCustomPresets] = useState<CustomPreset[]>([])
+  // 커스텀 프리셋 저장 (로컬 스토리지 동기화)
+  const [customPresets, setCustomPresets] = useLocalStorage<CustomPreset[]>(
+    'confetti-custom-presets',
+    [],
+  )
   const [presetName, setPresetName] = useState('')
   const [presetOptions, setPresetOptions] = useState<ConfettiOptions[]>([])
 

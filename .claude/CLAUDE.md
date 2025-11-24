@@ -20,6 +20,13 @@ pnpm run typecheck    # Run TypeScript type checking
 pnpm run build        # Build for production (outputs to build/client and build/server)
 ```
 
+## Coding Conventions
+
+- **kebab-case** for file and folder names
+- **PascalCase** for React component names
+- **camelCase** for variables and functions (including React hooks)
+- TypeScript is used throughout with strict typing
+
 ## Architecture
 
 ### React Router Configuration

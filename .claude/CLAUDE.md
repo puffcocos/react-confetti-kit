@@ -40,6 +40,7 @@ The main application state lives in `app/pages/preview/index.tsx` (PreviewPage c
 4. **Editing State**: Tracks which preset/effect is being edited
 
 State flows down to three main child components:
+
 - `PresetSection`: Built-in confetti presets
 - `CustomPresetSection`: User-saved presets with multi-effect support
 - `SettingsPanel`: Real-time parameter controls
@@ -47,11 +48,13 @@ State flows down to three main child components:
 ### Confetti System
 
 **Hook Architecture**: The `useConfetti` hook (app/components/use-confetti.ts) wraps canvas-confetti:
+
 - Accepts single `ConfettiOptions` or array of options
 - Arrays execute all effects sequentially
 - All presets are arrays to support multi-effect animations
 
 **Preset Structure**: Defined in `app/components/presets.ts`
+
 ```typescript
 // Each preset is an array of ConfettiOptions
 celebration: [
@@ -62,6 +65,7 @@ celebration: [
 ```
 
 **Custom Presets**: Users can:
+
 - Build presets by adding current settings as new effects
 - Edit individual effects within saved presets
 - Load effects back to settings panel for modification
@@ -77,43 +81,3 @@ celebration: [
 
 - **constants.ts**: Default values and OPTION_INFO with labels/descriptions/ranges
 - **types.ts**: TypeScript interfaces for CustomPreset, CustomColorPreset, OptionInfo
-
-## GitHub Pages Deployment
-
-The app deploys automatically via GitHub Actions (`.github/workflows/deploy.yml`) on push to main:
-1. Build with `pnpm run build`
-2. Upload `build/client` directory as artifact
-3. Deploy to GitHub Pages
-
-## Git Commit Conventions
-
-Use the `/commit` slash command or follow this format:
-
-```
-(<scope>): <emoji> <summary in Korean>
-
-<optional body in Korean>
-```
-
-Scope examples: routes, pages, components, config, package, ci, docs
-
-Common emojis:
-- ✨ feature add/fix
-- ♻️ refactor
-- 🎨 UI/CSS changes
-- ✏️ typo/comment fixes
-- 📦 package updates
-- 👷 CI/CD changes
-- ⚙️ config changes
-- 🧹 cleanup
-
-**Never co-author commits with Claude**
-
-## Code Terminology
-
-Use Korean terminology consistently:
-- "생성되는" not "발사되는" (for particle generation)
-- "시작 위치" not "발사 위치" (for origin position)
-- "방향 각도" not "발사 각도" (for angle)
-- "진행 방향" not "발사 방향" (for direction)
-- "실행" not "발사" (for executing confetti)

@@ -63,7 +63,7 @@ export function PreviewPage() {
   // 색상 프리셋 수정 모드
   const [editingColorPresetIndex, setEditingColorPresetIndex] = useState<number | null>(null)
 
-  // 커스텀 도형 옵션
+  // 커스텀 파티클 옵션
   const [useCustomShapes, setUseCustomShapes] = useState(false)
   const [customShapePath, setCustomShapePath] = useState('')
   const [customShapePresets, setCustomShapePresets] = useLocalStorage<CustomShapePreset[]>(
@@ -88,7 +88,7 @@ export function PreviewPage() {
     drift,
     ...(useCustomColors && customColors.length > 0 ? { colors: customColors } : {}),
     ...((() => {
-      // 커스텀 도형과 기본 도형 결합
+      // 커스텀 파티클과 기본 도형 결합
       const allShapes: any[] = []
 
       // 기본 도형 추가
@@ -96,12 +96,25 @@ export function PreviewPage() {
         allShapes.push(...shapes)
       }
 
-      // 커스텀 도형 추가
-      if (useCustomShapes && selectedCustomShapes.length > 0) {
-        const customShapes = selectedCustomShapes.map(preset =>
-          createShape({ path: preset.path, matrix: preset.matrix })
-        )
-        allShapes.push(...customShapes)
+      // 커스텀 파티클 추가
+      if (useCustomShapes) {
+        // 입력 중인 Path가 있으면 바로 사용 (저장하지 않아도 테스트 가능)
+        if (customShapePath.trim()) {
+          try {
+            const shape = createShape({ path: customShapePath })
+            allShapes.push(shape)
+          } catch (error) {
+            console.error('Invalid custom shape path:', error)
+          }
+        }
+
+        // 선택된 저장된 파티클도 추가
+        if (selectedCustomShapes.length > 0) {
+          const customShapes = selectedCustomShapes.map(preset =>
+            createShape({ path: preset.path, matrix: preset.matrix })
+          )
+          allShapes.push(...customShapes)
+        }
 
         // 기본 도형도 함께 사용
         if (shapes.length > 0) {
@@ -353,27 +366,7 @@ export function PreviewPage() {
     setCustomColors(['#ff0000', '#00ff00', '#0000ff'])
   }
 
-  // 커스텀 도형 Path 입력으로 미리보기
-  const previewCustomShape = () => {
-    if (!customShapePath.trim()) {
-      alert('SVG Path를 입력해주세요')
-      return
-    }
-
-    try {
-      const shape = createShape({ path: customShapePath })
-      fire({
-        ...currentOptions,
-        shapes: [shape],
-        particleCount: 30,
-      })
-    } catch (error) {
-      alert('유효하지 않은 SVG Path입니다')
-      console.error('Shape preview error:', error)
-    }
-  }
-
-  // 커스텀 도형 프리셋에 추가
+  // 커스텀 파티클 프리셋에 추가
   const addCustomShapePreset = () => {
     if (!customShapePath.trim()) {
       alert('SVG Path를 입력해주세요')
@@ -381,7 +374,7 @@ export function PreviewPage() {
     }
 
     if (!shapePresetName.trim()) {
-      alert('도형 프리셋 이름을 입력해주세요')
+      alert('파티클 프리셋 이름을 입력해주세요')
       return
     }
 
@@ -398,20 +391,20 @@ export function PreviewPage() {
       setCustomShapePresets([...customShapePresets, newPreset])
       setShapePresetName('')
       setCustomShapePath('')
-      alert(`"${shapePresetName}" 도형 프리셋이 저장되었습니다!`)
+      alert(`"${shapePresetName}" 파티클 프리셋이 저장되었습니다!`)
     } catch (error) {
       alert('유효하지 않은 SVG Path입니다')
       console.error('Shape add error:', error)
     }
   }
 
-  // 예시 도형 불러오기
+  // 예시 파티클 불러오기
   const loadExampleShape = (preset: CustomShapePreset) => {
     setCustomShapePath(preset.path)
     setShapePresetName(preset.name)
   }
 
-  // 커스텀 도형 선택/해제 토글
+  // 커스텀 파티클 선택/해제 토글
   const toggleCustomShape = (preset: CustomShapePreset) => {
     const isSelected = selectedCustomShapes.some(s => s.name === preset.name)
     if (isSelected) {
@@ -422,12 +415,12 @@ export function PreviewPage() {
     }
   }
 
-  // 커스텀 도형 프리셋 삭제
+  // 커스텀 파티클 프리셋 삭제
   const deleteCustomShapePreset = (index: number) => {
     setCustomShapePresets(customShapePresets.filter((_, i) => i !== index))
   }
 
-  // 커스텀 도형 프리셋 수정 시작
+  // 커스텀 파티클 프리셋 수정 시작
   const startEditingShapePreset = (index: number) => {
     const preset = customShapePresets[index]
     setCustomShapePath(preset.path)
@@ -435,12 +428,12 @@ export function PreviewPage() {
     setEditingShapePresetIndex(index)
   }
 
-  // 커스텀 도형 프리셋 업데이트
+  // 커스텀 파티클 프리셋 업데이트
   const updateCustomShapePreset = () => {
     if (editingShapePresetIndex === null) return
 
     if (!shapePresetName.trim()) {
-      alert('도형 프리셋 이름을 입력해주세요')
+      alert('파티클 프리셋 이름을 입력해주세요')
       return
     }
 
@@ -459,10 +452,10 @@ export function PreviewPage() {
     setShapePresetName('')
     setCustomShapePath('')
     setEditingShapePresetIndex(null)
-    alert('도형 프리셋이 업데이트되었습니다!')
+    alert('파티클 프리셋이 업데이트되었습니다!')
   }
 
-  // 도형 프리셋 수정 모드 취소
+  // 파티클 프리셋 수정 모드 취소
   const cancelEditingShapePreset = () => {
     setEditingShapePresetIndex(null)
     setShapePresetName('')
@@ -565,7 +558,6 @@ export function PreviewPage() {
             onUseCustomShapesChange={setUseCustomShapes}
             onCustomShapePathChange={setCustomShapePath}
             onShapePresetNameChange={setShapePresetName}
-            onPreviewCustomShape={previewCustomShape}
             onAddCustomShapePreset={addCustomShapePreset}
             onLoadExampleShape={loadExampleShape}
             onToggleCustomShape={toggleCustomShape}

@@ -32,6 +32,9 @@ importers:
       react-router:
         specifier: ^7.9.2
         version: 7.9.6(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      svg-path-bbox:
+        specifier: ^2.1.0
+        version: 2.1.0
     devDependencies:
       '@react-router/dev':
         specifier: ^7.9.2
@@ -1594,6 +1597,14 @@ packages:
   strip-outer@1.0.1:
     resolution: {integrity: sha512-k55yxKHwaXnpYGsOzg4Vl8+tDrWylxDEpknGjhTiZB8dFRU5rTo9CAzeycivxV3s+zlTKwrs6WxMxR95n26kwg==}
     engines: {node: '>=0.10.0'}
+
+  svg-path-bbox@2.1.0:
+    resolution: {integrity: sha512-PEoSQFbBvL7FOCE4cN8Knej6L7bXdNkjPcUYsfMMpq0HpnqiO0sE2mcXTd7LX160aOyh5HbaeN/SoY8thMk5Kg==}
+    engines: {node: '>=6.17.1'}
+    hasBin: true
+
+  svgpath@2.6.0:
+    resolution: {integrity: sha512-OIWR6bKzXvdXYyO4DK/UWa1VA1JeKq8E+0ug2DG98Y/vOmMpfZNj+TIG988HjfYSqtcy/hFOtZq/n/j5GSESNg==}
 
   tailwindcss@4.1.17:
     resolution: {integrity: sha512-j9Ee2YjuQqYT9bbRTfTZht9W/ytp5H+jJpZKiYdP/bpnXARAuELt9ofP0lPnmHjbga7SNQIxdTAXCmtKVYjN+Q==}
@@ -3229,6 +3240,12 @@ snapshots:
   strip-outer@1.0.1:
     dependencies:
       escape-string-regexp: 1.0.5
+
+  svg-path-bbox@2.1.0:
+    dependencies:
+      svgpath: 2.6.0
+
+  svgpath@2.6.0: {}
 
   tailwindcss@4.1.17: {}
 

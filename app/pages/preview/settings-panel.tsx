@@ -2,6 +2,7 @@ import type { Options as ConfettiOptions } from 'canvas-confetti'
 import type { CustomPreset, CustomColorPreset, CustomShapePreset } from './types'
 import { DEFAULT_VALUES, OPTION_INFO, COLOR_PRESETS } from './constants'
 import { EXAMPLE_SHAPE_PRESETS } from './shape-presets'
+import { SvgPathPreview } from '~/components/svg-path-preview'
 
 interface SettingsPanelProps {
   // 옵션 상태
@@ -36,7 +37,7 @@ interface SettingsPanelProps {
   colorPresetName: string
   editingColorPresetIndex: number | null
 
-  // 커스텀 도형
+  // 커스텀 파티클
   useCustomShapes: boolean
   customShapePath: string
   customShapePresets: CustomShapePreset[]
@@ -75,11 +76,10 @@ interface SettingsPanelProps {
   onUpdateCustomColorPreset: () => void
   onCancelEditingColorPreset: () => void
 
-  // 커스텀 도형 관련
+  // 커스텀 파티클 관련
   onUseCustomShapesChange: (value: boolean) => void
   onCustomShapePathChange: (value: string) => void
   onShapePresetNameChange: (value: string) => void
-  onPreviewCustomShape: () => void
   onAddCustomShapePreset: () => void
   onLoadExampleShape: (preset: CustomShapePreset) => void
   onToggleCustomShape: (preset: CustomShapePreset) => void
@@ -154,7 +154,6 @@ export function SettingsPanel(props: SettingsPanelProps) {
     onUseCustomShapesChange,
     onCustomShapePathChange,
     onShapePresetNameChange,
-    onPreviewCustomShape,
     onAddCustomShapePreset,
     onLoadExampleShape,
     onToggleCustomShape,
@@ -569,10 +568,10 @@ export function SettingsPanel(props: SettingsPanelProps) {
           </div>
         </div>
 
-        {/* 커스텀 도형 (shapeFromPath) */}
+        {/* 커스텀 파티클 (shapeFromPath) */}
         <div className="pt-4 border-t border-gray-200">
           <div className="flex items-center justify-between mb-3">
-            <label className="text-sm font-medium text-gray-700">커스텀 도형 (SVG Path)</label>
+            <label className="text-sm font-medium text-gray-700">커스텀 파티클 (SVG Path)</label>
             <button
               onClick={() => onUseCustomShapesChange(!useCustomShapes)}
               className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
@@ -592,7 +591,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
                 <p className="font-semibold mb-1">ℹ️ 주의사항:</p>
                 <ul className="list-disc list-inside space-y-1 text-xs">
                   <li>모든 path는 fill로 처리됩니다 (stroke 미지원)</li>
-                  <li>도형은 단일 색상만 지원합니다</li>
+                  <li>파티클은 단일 색상만 지원합니다</li>
                   <li>성능을 위해 matrix를 미리 계산합니다</li>
                 </ul>
               </div>
@@ -611,21 +610,20 @@ export function SettingsPanel(props: SettingsPanelProps) {
                 />
               </div>
 
-              {/* 미리보기 및 저장 */}
-              <div className="flex gap-2">
-                <button
-                  onClick={onPreviewCustomShape}
-                  className="flex-1 px-3 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors text-xs font-medium"
-                  title="입력한 Path로 미리보기"
-                >
-                  🔍 미리보기
-                </button>
-              </div>
+              {/* SVG 미리보기 */}
+              {customShapePath && (
+                <div className="p-3 bg-gray-50 border border-gray-300 rounded">
+                  <label className="block text-xs font-medium text-gray-600 mb-2">미리보기</label>
+                  <div className="flex items-center justify-center bg-white rounded p-4 border border-gray-200">
+                    <SvgPathPreview path={customShapePath} width={100} height={100} className="text-purple-600" />
+                  </div>
+                </div>
+              )}
 
-              {/* 커스텀 도형 저장 */}
+              {/* 커스텀 파티클 저장 */}
               <div className="pt-3 border-t border-gray-300">
                 <label className="block text-xs font-medium text-gray-600 mb-2">
-                  커스텀 도형 이름
+                  커스텀 파티클 이름
                 </label>
                 <input
                   type="text"
@@ -661,19 +659,19 @@ export function SettingsPanel(props: SettingsPanelProps) {
                 </div>
               </div>
 
-              {/* 저장된 커스텀 도형 목록 */}
+              {/* 저장된 커스텀 파티클 목록 */}
               {customShapePresets.length > 0 && (
                 <div className="pt-3 border-t border-gray-300">
                   <label className="block text-xs font-medium text-gray-600 mb-2">
-                    저장된 커스텀 도형
+                    저장된 커스텀 파티클
                   </label>
-                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
                     {customShapePresets.map((preset, index) => {
-                      const isSelected = selectedCustomShapes.some(s => s.name === preset.name)
+                      const isSelected = selectedCustomShapes.some((s) => s.name === preset.name)
                       return (
                         <div
                           key={index}
-                          className={`flex items-center gap-2 p-2 rounded border transition-colors ${
+                          className={`p-3 rounded border transition-colors ${
                             editingShapePresetIndex === index
                               ? 'bg-yellow-50 border-yellow-400'
                               : isSelected
@@ -681,30 +679,42 @@ export function SettingsPanel(props: SettingsPanelProps) {
                               : 'bg-white border-gray-300'
                           }`}
                         >
-                          <button
-                            onClick={() => onToggleCustomShape(preset)}
-                            className={`flex-1 text-left text-xs font-semibold transition-colors ${
-                              isSelected
-                                ? 'text-blue-700'
-                                : 'text-gray-800 hover:text-gray-900'
-                            }`}
-                            title={isSelected ? '선택 해제' : '선택하여 사용'}
-                          >
-                            {isSelected && '✓ '}{preset.name}
-                          </button>
-                          <button
-                            onClick={() => onStartEditingShapePreset(index)}
-                            className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-xs"
-                            title="수정"
-                          >
-                            수정
-                          </button>
-                          <button
-                            onClick={() => onDeleteCustomShapePreset(index)}
-                            className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors text-xs"
-                          >
-                            삭제
-                          </button>
+                          {/* 상단: 이름 및 버튼 */}
+                          <div className="flex items-center gap-2 mb-2">
+                            <button
+                              onClick={() => onToggleCustomShape(preset)}
+                              className={`flex-1 text-left text-xs font-semibold transition-colors cursor-pointer ${
+                                isSelected ? 'text-blue-700' : 'text-gray-800 hover:text-gray-900'
+                              }`}
+                              title={isSelected ? '선택 해제' : '선택하여 사용'}
+                            >
+                              {isSelected && '✓ '}
+                              {preset.name}
+                            </button>
+                            <button
+                              onClick={() => onStartEditingShapePreset(index)}
+                              className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-xs"
+                              title="수정"
+                            >
+                              수정
+                            </button>
+                            <button
+                              onClick={() => onDeleteCustomShapePreset(index)}
+                              className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors text-xs"
+                            >
+                              삭제
+                            </button>
+                          </div>
+
+                          {/* 하단: 미리보기 */}
+                          <div className="flex items-center justify-center bg-gray-50 rounded p-2 border border-gray-200">
+                            <SvgPathPreview
+                              path={preset.path}
+                              width={40}
+                              height={40}
+                              className="text-purple-600"
+                            />
+                          </div>
                         </div>
                       )
                     })}
@@ -712,10 +722,10 @@ export function SettingsPanel(props: SettingsPanelProps) {
                 </div>
               )}
 
-              {/* 예시 도형 */}
+              {/* 예시 파티클 */}
               <div className="pt-3 border-t border-gray-300">
                 <label className="block text-xs font-medium text-gray-600 mb-2">
-                  💡 예시 도형 불러오기
+                  💡 예시 파티클 불러오기
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   {EXAMPLE_SHAPE_PRESETS.map((preset) => (

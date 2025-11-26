@@ -18,7 +18,7 @@ export interface CustomColorPreset {
 }
 
 /**
- * 커스텀 도형 프리셋 타입
+ * 커스텀 파티클 프리셋 타입
  */
 export interface CustomShapePreset {
   name: string

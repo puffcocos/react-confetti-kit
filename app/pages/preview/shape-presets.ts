@@ -1,15 +1,15 @@
 import type { CustomShapePreset } from './types'
 
 /**
- * 미리 정의된 커스텀 도형 프리셋
+ * 미리 정의된 커스텀 파티클 프리셋
  *
  * @description
- * canvas-confetti의 shapeFromPath API를 활용한 커스텀 도형 예시입니다.
+ * canvas-confetti의 shapeFromPath API를 활용한 커스텀 파티클 예시입니다.
  * matrix는 성능 최적화를 위해 미리 계산된 값을 사용합니다.
  *
  * 주의사항:
  * - 모든 path는 fill로 처리됩니다 (stroke 미지원)
- * - 도형은 단일 색상만 지원됩니다
+ * - 파티클은 단일 색상만 지원됩니다
  * - matrix를 미리 계산하여 저장하면 런타임 성능이 향상됩니다
  */
 export const EXAMPLE_SHAPE_PRESETS: CustomShapePreset[] = [

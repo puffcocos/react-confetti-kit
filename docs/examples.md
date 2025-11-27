@@ -456,4 +456,3 @@ function ReducedMotionConfetti() {
 
 - [API 레퍼런스](./api-reference.md) - 전체 옵션 설명
 - [프리셋 가이드](./presets.md) - 프리셋 사용법
-- [트러블슈팅](./troubleshooting.md) - 문제 해결

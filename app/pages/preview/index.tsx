@@ -469,21 +469,6 @@ export function PreviewPage() {
         <h1 className="text-4xl font-bold text-gray-800 mb-2">Confetti 미리보기</h1>
         <p className="text-gray-600 mb-8">다양한 옵션을 조절하며 confetti 효과를 테스트해보세요</p>
 
-        {/* Canvas 바운더리 (커스텀 캔버스 사용 시) */}
-        {useCustomCanvas && (
-          <div className="mb-8 relative">
-            <div className="bg-white rounded-lg shadow-lg p-4 border-4 border-purple-400 border-dashed">
-              <div className="absolute top-2 left-2 bg-purple-600 text-white px-3 py-1 rounded text-xs font-semibold">
-                Confetti Canvas 영역
-              </div>
-              <canvas
-                ref={setConfettiCanvasRef}
-                className="w-full h-96 bg-gradient-to-br from-purple-50 to-blue-50 rounded"
-              />
-            </div>
-          </div>
-        )}
-
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* 왼쪽: 프리셋 & 특수 효과 */}
           <div className="space-y-6">
@@ -537,10 +522,26 @@ export function PreviewPage() {
                   {useCustomCanvas ? 'ON' : 'OFF'}
                 </button>
               </div>
+
               {useCustomCanvas && (
-                <div className="mt-3 p-3 bg-purple-50 border border-purple-200 rounded text-sm text-purple-700">
-                  💡 <strong>Canvas 모드</strong>: 위의 보라색 테두리 영역에서만 confetti가 발생합니다.
-                </div>
+                <>
+                  <div className="mt-3 p-3 bg-purple-50 border border-purple-200 rounded text-sm text-purple-700">
+                    💡 <strong>Canvas 모드</strong>: 아래 보라색 테두리 영역에서만 confetti가 발생합니다.
+                  </div>
+
+                  {/* Confetti Canvas 영역 */}
+                  <div className="mt-4 relative">
+                    <div className="bg-white rounded-lg shadow-lg p-4 border-4 border-purple-400 border-dashed">
+                      <div className="absolute top-2 left-2 bg-purple-600 text-white px-3 py-1 rounded text-xs font-semibold z-10">
+                        Confetti Canvas 영역
+                      </div>
+                      <canvas
+                        ref={setConfettiCanvasRef}
+                        className="w-full h-96 bg-gradient-to-br from-purple-50 to-blue-50 rounded"
+                      />
+                    </div>
+                  </div>
+                </>
               )}
             </div>
           </div>

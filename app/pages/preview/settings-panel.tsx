@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { Options as ConfettiOptions } from 'canvas-confetti'
 import type { CustomPreset, CustomColorPreset, CustomShapePreset } from './types'
 import { DEFAULT_VALUES, OPTION_INFO, COLOR_PRESETS } from './constants'
@@ -97,6 +98,8 @@ interface SettingsPanelProps {
  * 커스텀 효과 설정 패널 컴포넌트
  */
 export function SettingsPanel(props: SettingsPanelProps) {
+  const [isCodePreviewExpanded, setIsCodePreviewExpanded] = useState(false)
+
   const {
     particleCount,
     spread,
@@ -780,23 +783,41 @@ export function SettingsPanel(props: SettingsPanelProps) {
       {/* 코드 미리보기 */}
       <div className="mt-6 p-4 bg-gray-50 rounded-lg">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-semibold text-gray-700">코드 미리보기</h3>
           <button
-            onClick={() => onCopyToClipboard(generateCodePreview(), 'main')}
-            className="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white text-xs rounded transition-colors"
-            title="코드 복사"
+            onClick={() => setIsCodePreviewExpanded(!isCodePreviewExpanded)}
+            className="relative flex items-center text-sm font-semibold text-gray-700 hover:text-gray-900 transition-colors pl-5"
           >
-            {copiedMain ? '✓ 복사됨!' : '📋 복사'}
+            <span
+              className={`absolute left-0 text-xs transition-transform duration-200 ${
+                isCodePreviewExpanded ? 'rotate-90' : 'rotate-0'
+              }`}
+            >
+              ▶
+            </span>
+            코드 미리보기
           </button>
+          {isCodePreviewExpanded && (
+            <button
+              onClick={() => onCopyToClipboard(generateCodePreview(), 'main')}
+              className="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white text-xs rounded transition-colors"
+              title="코드 복사"
+            >
+              {copiedMain ? '✓ 복사됨!' : '📋 복사'}
+            </button>
+          )}
         </div>
-        <div className="bg-gray-900 rounded p-4 overflow-x-auto">
-          <pre className="text-xs text-green-400 font-mono">
-            <code>{generateCodePreview()}</code>
-          </pre>
-        </div>
-        <p className="text-xs text-gray-500 mt-2">
-          useConfetti 훅을 사용하여 위 코드로 confetti를 실행할 수 있습니다
-        </p>
+        {isCodePreviewExpanded && (
+          <>
+            <div className="bg-gray-900 rounded p-4 overflow-x-auto">
+              <pre className="text-xs text-green-400 font-mono">
+                <code>{generateCodePreview()}</code>
+              </pre>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              useConfetti 훅을 사용하여 위 코드로 confetti를 실행할 수 있습니다
+            </p>
+          </>
+        )}
       </div>
     </div>
   )

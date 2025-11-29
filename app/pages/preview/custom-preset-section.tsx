@@ -137,15 +137,6 @@ export function CustomPresetSection({
                     </span>
                   </button>
                   <button
-                    onClick={() =>
-                      setSelectedPresetForCode(selectedPresetForCode === index ? null : index)
-                    }
-                    className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-sm font-medium"
-                    title="코드 보기"
-                  >
-                    {selectedPresetForCode === index ? '코드 숨기기' : '코드 보기'}
-                  </button>
-                  <button
                     onClick={() => onDeleteCustomPreset(index)}
                     className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors text-sm font-medium"
                   >
@@ -154,29 +145,48 @@ export function CustomPresetSection({
                 </div>
 
               {/* 코드 미리보기 */}
-              {selectedPresetForCode === index && (
-                <div className="px-3 pb-3">
-                  <div className="relative">
+              <div className="px-3 pb-3 pt-2 border-t border-gray-200">
+                <div className="flex items-center justify-between mb-2">
+                  <button
+                    onClick={() =>
+                      setSelectedPresetForCode(selectedPresetForCode === index ? null : index)
+                    }
+                    className="relative flex items-center text-sm font-semibold text-gray-700 hover:text-gray-900 transition-colors pl-5"
+                  >
+                    <span
+                      className={`absolute left-0 text-xs transition-transform duration-200 ${
+                        selectedPresetForCode === index ? 'rotate-90' : 'rotate-0'
+                      }`}
+                    >
+                      ▶
+                    </span>
+                    코드 미리보기
+                  </button>
+                  {selectedPresetForCode === index && (
+                    <button
+                      onClick={() =>
+                        onCopyToClipboard(`fire(${JSON.stringify(preset.options, null, 2)})`, index)
+                      }
+                      className="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white text-xs rounded transition-colors"
+                      title="코드 복사"
+                    >
+                      {copiedPresetIndex === index ? '✓ 복사됨!' : '📋 복사'}
+                    </button>
+                  )}
+                </div>
+                {selectedPresetForCode === index && (
+                  <>
                     <div className="bg-gray-900 rounded p-3 overflow-x-auto">
                       <pre className="text-xs text-green-400 font-mono">
                         <code>{`fire(${JSON.stringify(preset.options, null, 2)})`}</code>
                       </pre>
                     </div>
-                    <button
-                      onClick={() =>
-                        onCopyToClipboard(`fire(${JSON.stringify(preset.options, null, 2)})`, index)
-                      }
-                      className="absolute top-2 right-2 px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white text-xs rounded transition-colors"
-                      title="코드 복사"
-                    >
-                      {copiedPresetIndex === index ? '✓ 복사됨!' : '📋 복사'}
-                    </button>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2">
-                    useConfetti 훅을 사용하여 위 코드로 "{preset.name}" 프리셋을 실행할 수 있습니다
-                  </p>
-                </div>
-              )}
+                    <p className="text-xs text-gray-500 mt-2">
+                      useConfetti 훅을 사용하여 위 코드로 "{preset.name}" 프리셋을 실행할 수 있습니다
+                    </p>
+                  </>
+                )}
+              </div>
 
               {/* 효과 목록 및 수정 */}
               <div className="px-3 pb-3">

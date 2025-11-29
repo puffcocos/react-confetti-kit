@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import type { Options as ConfettiOptions } from 'canvas-confetti'
 import type { CustomPreset } from './types'
-import { FireButton } from './fire-button'
 
 interface CustomPresetSectionProps {
   presetOptions: ConfettiOptions[]
@@ -229,7 +228,12 @@ export function CustomPresetSection({
           {/* Fire 버튼 */}
           {!useCustomCanvas && activeCustomPreset !== null && (
             <div className="mt-4 animate-fade-in">
-              <FireButton onFire={onFireCustomPreset} />
+              <button
+                onClick={onFireCustomPreset}
+                className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-bold text-lg hover:from-purple-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl"
+              >
+                🎉 {customPresets[activeCustomPreset].name} 테스트
+              </button>
             </div>
           )}
         </div>

@@ -200,9 +200,13 @@ export function SettingsPanel(props: SettingsPanelProps) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
+    <div
+      className={`bg-white rounded-lg shadow-md p-6 transition-all ${
+        editingPresetIndex !== null && editingEffectIndex !== null ? 'ring-1 ring-yellow-400' : ''
+      }`}
+    >
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-semibold text-gray-800">커스텀 효과 설정</h2>
+        <h2 className="text-2xl font-semibold text-gray-800">효과 설정</h2>
         <button
           onClick={onResetToDefaults}
           className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm font-medium"
@@ -214,30 +218,12 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
       {/* 수정 모드 안내 */}
       {editingPresetIndex !== null && editingEffectIndex !== null && (
-        <div className="mb-4 p-4 bg-yellow-50 border border-yellow-300 rounded-lg">
-          <div className="flex items-start justify-between gap-3 mb-3">
-            <div>
-              <h3 className="text-sm font-semibold text-yellow-900 mb-1">🔧 수정 모드</h3>
-              <p className="text-xs text-yellow-800">
-                "{customPresets[editingPresetIndex].name}" 프리셋의 효과 {editingEffectIndex + 1}
-                을(를) 수정하고 있습니다
-              </p>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={onUpdateEffectInPreset}
-              className="flex-1 px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors text-sm font-medium"
-            >
-              ✓ 업데이트
-            </button>
-            <button
-              onClick={onCancelEditMode}
-              className="flex-1 px-3 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors text-sm font-medium"
-            >
-              ✕ 취소
-            </button>
-          </div>
+        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-400 rounded-lg">
+          <h3 className="text-sm font-semibold text-yellow-800 mb-1">🔧 수정 모드</h3>
+          <p className="text-xs text-yellow-700">
+            "{customPresets[editingPresetIndex].name}" 프리셋의 효과 {editingEffectIndex + 1}
+            을(를) 수정하고 있습니다
+          </p>
         </div>
       )}
 
@@ -755,11 +741,40 @@ export function SettingsPanel(props: SettingsPanelProps) {
         </div>
       </div>
 
-      {/* 커스텀 실행 버튼 (Canvas 바운더리 OFF일 때만 표시) */}
-      {!useCustomCanvas && (
-        <div className="animate-fade-in">
-          <FireButton onFire={onFireCustom} />
+      {/* 하단 액션 버튼 영역 */}
+      {editingPresetIndex !== null && editingEffectIndex !== null ? (
+        // 수정 모드: 항상 표시 (업데이트/취소는 항상, 테스트는 Canvas OFF일 때만)
+        <div className="animate-fade-in space-y-2">
+          {!useCustomCanvas && (
+            <button
+              onClick={onFireCustom}
+              className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-bold text-sm hover:from-purple-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl"
+            >
+              🎉 {customPresets[editingPresetIndex].name} 효과 {editingEffectIndex + 1} 테스트
+            </button>
+          )}
+          <div className="flex gap-2">
+            <button
+              onClick={onUpdateEffectInPreset}
+              className="flex-1 px-4 py-3 bg-green-600 text-white rounded-lg font-bold text-sm hover:bg-green-700 transition-all shadow-lg hover:shadow-xl"
+            >
+              ✓ 업데이트
+            </button>
+            <button
+              onClick={onCancelEditMode}
+              className="flex-1 px-4 py-3 bg-gray-500 text-white rounded-lg font-bold text-sm hover:bg-gray-600 transition-all shadow-lg hover:shadow-xl"
+            >
+              ✕ 취소
+            </button>
+          </div>
         </div>
+      ) : (
+        // 일반 모드: Canvas OFF일 때만 fire 버튼
+        !useCustomCanvas && (
+          <div className="animate-fade-in">
+            <FireButton onFire={onFireCustom} label="효과 테스트" />
+          </div>
+        )
       )}
 
       {/* 코드 미리보기 */}

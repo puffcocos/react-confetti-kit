@@ -660,7 +660,7 @@ export function PreviewPage() {
                     <div className="bg-blue-500 text-white px-2 py-1 rounded text-xs">
                       {activeCustomPreset !== null
                         ? `${customPresets[activeCustomPreset].name} 프리셋`
-                        : '커스텀 효과'}
+                        : '효과'}
                     </div>
                   </div>
                   <canvas

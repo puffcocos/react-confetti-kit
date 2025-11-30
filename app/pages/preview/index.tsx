@@ -533,6 +533,43 @@ export function PreviewPage() {
     setCustomShapePath('')
   }
 
+  // 코드에서 프리셋 가져오기
+  const importPresetCode = (code: string) => {
+    try {
+      // fire(...) 패턴에서 내용 추출
+      let jsonString = code.trim()
+
+      // fire( 로 시작하는 경우 제거
+      const fireMatch = jsonString.match(/fire\s*\(\s*(\[[\s\S]*\])\s*\)/)
+      if (fireMatch) {
+        jsonString = fireMatch[1]
+      }
+
+      // JSON 파싱
+      const parsed = JSON.parse(jsonString)
+
+      // 배열인지 확인
+      if (!Array.isArray(parsed)) {
+        throw new Error('배열 형식이어야 합니다. fire([...]) 형식으로 붙여넣어주세요.')
+      }
+
+      // 각 요소가 유효한 ConfettiOptions인지 간단히 검증
+      for (let i = 0; i < parsed.length; i++) {
+        if (typeof parsed[i] !== 'object' || parsed[i] === null) {
+          throw new Error(`효과 ${i + 1}이(가) 올바른 객체 형식이 아닙니다.`)
+        }
+      }
+
+      // presetOptions에 추가
+      setPresetOptions([...presetOptions, ...parsed])
+    } catch (error) {
+      if (error instanceof SyntaxError) {
+        throw new Error('유효하지 않은 JSON 형식입니다. 코드를 확인해주세요.')
+      }
+      throw error
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-8">
       <div className="max-w-6xl mx-auto">
@@ -567,6 +604,7 @@ export function PreviewPage() {
               onCopyToClipboard={copyToClipboard}
               onFireCustomPreset={fireCustomPreset}
               copiedPresetIndex={copiedPresetIndex}
+              onImportPresetCode={importPresetCode}
             />
 
             {/* Canvas 바운더리 제어 */}

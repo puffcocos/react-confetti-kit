@@ -21,6 +21,7 @@ interface CustomPresetSectionProps {
   onCopyToClipboard: (text: string, type: 'main' | number) => Promise<void>
   onFireCustomPreset: () => void
   copiedPresetIndex: number | null
+  onImportPresetCode: (code: string) => void
 }
 
 /**
@@ -45,8 +46,27 @@ export function CustomPresetSection({
   onCopyToClipboard,
   onFireCustomPreset,
   copiedPresetIndex,
+  onImportPresetCode,
 }: CustomPresetSectionProps) {
   const [selectedPresetForCode, setSelectedPresetForCode] = useState<number | null>(null)
+  const [importCode, setImportCode] = useState('')
+  const [isImportSectionExpanded, setIsImportSectionExpanded] = useState(false)
+
+  const handleImportCode = () => {
+    if (!importCode.trim()) {
+      alert('코드를 입력해주세요')
+      return
+    }
+
+    try {
+      onImportPresetCode(importCode)
+      setImportCode('')
+      setIsImportSectionExpanded(false)
+      alert('코드를 성공적으로 가져왔습니다!')
+    } catch (error) {
+      alert(`코드 가져오기 실패: ${error instanceof Error ? error.message : '알 수 없는 오류'}`)
+    }
+  }
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
@@ -58,13 +78,60 @@ export function CustomPresetSection({
           <label className="text-sm font-medium text-blue-900">
             프리셋 구성 ({presetOptions.length}개 효과)
           </label>
-          <button
-            onClick={onAddToPreset}
-            className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-xs font-medium"
-          >
-            + 커스텀 효과 추가
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setIsImportSectionExpanded(!isImportSectionExpanded)}
+              className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition-colors text-xs font-medium"
+            >
+              📥 코드 가져오기
+            </button>
+            <button
+              onClick={onAddToPreset}
+              className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-xs font-medium"
+            >
+              + 커스텀 효과 추가
+            </button>
+          </div>
         </div>
+
+        {/* 코드 가져오기 섹션 */}
+        {isImportSectionExpanded && (
+          <div className="mb-3 p-3 bg-white rounded-lg border border-green-300">
+            <label className="block text-xs font-medium text-gray-700 mb-2">
+              복사한 프리셋 코드를 붙여넣으세요
+            </label>
+            <textarea
+              value={importCode}
+              onChange={(e) => setImportCode(e.target.value)}
+              placeholder={`fire([
+  { particleCount: 50, spread: 70, ... },
+  { particleCount: 100, spread: 100, ... }
+])`}
+              className="w-full px-3 py-2 border border-gray-300 rounded text-xs font-mono text-gray-800 resize-none"
+              rows={6}
+            />
+            <div className="flex gap-2 mt-2">
+              <button
+                onClick={handleImportCode}
+                className="flex-1 px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors text-xs font-medium"
+              >
+                ✓ 가져오기
+              </button>
+              <button
+                onClick={() => {
+                  setImportCode('')
+                  setIsImportSectionExpanded(false)
+                }}
+                className="flex-1 px-3 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors text-xs font-medium"
+              >
+                ✕ 취소
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              💡 fire([...]) 형식의 코드를 붙여넣으면 자동으로 파싱되어 프리셋 구성에 추가됩니다
+            </p>
+          </div>
+        )}
 
         {/* 추가된 옵션들 */}
         {presetOptions.length > 0 && (

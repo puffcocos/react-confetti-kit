@@ -230,7 +230,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
         </div>
       )}
 
-      <div className="space-y-4 mb-6">
+      <div className="grid grid-cols-2 gap-x-4 gap-y-4 mb-6">
         {/* Particle Count */}
         <OptionSlider
           label={OPTION_INFO.particleCount.label}
@@ -368,7 +368,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
         />
 
         {/* 색상 옵션 */}
-        <div className="pt-4 border-t border-gray-200">
+        <div className="col-span-2 pt-4 border-t border-gray-200">
           <div className="flex items-center justify-between mb-3">
             <label className="text-sm font-medium text-gray-700">커스텀 색상 사용</label>
             <button
@@ -540,7 +540,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
         </div>
 
         {/* 모양 옵션 */}
-        <div className="pt-4 border-t border-gray-200">
+        <div className="col-span-2 pt-4 border-t border-gray-200">
           <label className="block text-sm font-medium text-gray-700 mb-3">파티클 모양</label>
           <div className="flex gap-2">
             {['circle', 'square', 'star'].map((shape) => (
@@ -563,7 +563,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
         </div>
 
         {/* 커스텀 파티클 (shapeFromPath) */}
-        <div className="pt-4 border-t border-gray-200">
+        <div className="col-span-2 pt-4 border-t border-gray-200">
           <div className="flex items-center justify-between mb-3">
             <label className="text-sm font-medium text-gray-700">커스텀 파티클 (SVG Path)</label>
             <button

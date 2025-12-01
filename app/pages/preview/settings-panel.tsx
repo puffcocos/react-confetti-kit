@@ -380,9 +380,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
           {useCustomColors && (
             <div>
               {/* 색상 프리셋 */}
-              <label className="block text-xs font-medium text-gray-600 mb-2">
-                색상 프리셋
-              </label>
+              <label className="block text-xs font-medium text-gray-600 mb-2">색상 프리셋</label>
 
               <div className="space-y-3">
                 {/* 저장된 커스텀 프리셋 목록 */}
@@ -396,7 +394,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
                         <div
                           key={index}
                           className={`bg-gray-50 rounded-lg transition-colors ${
-                            isEditing ? 'border-2 border-yellow-400' : ''
+                            isEditing ? 'border-1 border-yellow-400' : ''
                           }`}
                         >
                           <div className="flex items-center gap-2 p-3">
@@ -416,7 +414,15 @@ export function SettingsPanel(props: SettingsPanelProps) {
                               }`}
                             >
                               {preset.name}{' '}
-                              <span className={isActive ? 'text-purple-600' : isEditing ? 'text-yellow-600' : 'text-purple-600'}>
+                              <span
+                                className={
+                                  isActive
+                                    ? 'text-purple-600'
+                                    : isEditing
+                                    ? 'text-yellow-600'
+                                    : 'text-purple-600'
+                                }
+                              >
                                 ({preset.colors.length}개 색상)
                               </span>
                             </button>
@@ -443,33 +449,39 @@ export function SettingsPanel(props: SettingsPanelProps) {
                               색상 ({isEditing ? customColors.length : preset.colors.length}개)
                             </label>
                             <div className="flex flex-wrap gap-2 mb-3">
-                              {(isEditing ? customColors : preset.colors).map((color, colorIndex) => (
-                                <div
-                                  key={colorIndex}
-                                  className="flex items-center gap-1 bg-gray-100 rounded px-2 py-1"
-                                >
+                              {(isEditing ? customColors : preset.colors).map(
+                                (color, colorIndex) => (
                                   <div
-                                    className="w-4 h-4 rounded border border-gray-300"
-                                    style={{ backgroundColor: color }}
-                                  />
-                                  <span className="text-xs text-gray-800 font-medium">{color}</span>
-                                  {isEditing && (
-                                    <button
-                                      onClick={() => removeColor(color)}
-                                      className="ml-1 text-red-500 hover:text-red-700 text-xs font-bold"
-                                      title="색상 제거"
-                                    >
-                                      ×
-                                    </button>
-                                  )}
-                                </div>
-                              ))}
+                                    key={colorIndex}
+                                    className="flex items-center gap-1 bg-gray-100 rounded px-2 py-1"
+                                  >
+                                    <div
+                                      className="w-4 h-4 rounded border border-gray-300"
+                                      style={{ backgroundColor: color }}
+                                    />
+                                    <span className="text-xs text-gray-800 font-medium">
+                                      {color}
+                                    </span>
+                                    {isEditing && (
+                                      <button
+                                        onClick={() => removeColor(color)}
+                                        className="ml-1 text-red-500 hover:text-red-700 text-xs font-bold"
+                                        title="색상 제거"
+                                      >
+                                        ×
+                                      </button>
+                                    )}
+                                  </div>
+                                )
+                              )}
                             </div>
 
                             {/* 편집 모드일 때만 색상 추가 UI 표시 */}
                             {isEditing && (
                               <div>
-                                <label className="block text-xs font-medium text-gray-700 mb-2">색상 추가</label>
+                                <label className="block text-xs font-medium text-gray-700 mb-2">
+                                  색상 추가
+                                </label>
                                 <div className="flex gap-2">
                                   <input
                                     type="color"
@@ -504,7 +516,9 @@ export function SettingsPanel(props: SettingsPanelProps) {
                 <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
                   {editingColorPresetIndex === null && (
                     <>
-                      <label className="block text-xs font-medium text-gray-700 mb-2">새 프리셋 만들기</label>
+                      <label className="block text-xs font-medium text-gray-700 mb-2">
+                        새 프리셋 만들기
+                      </label>
 
                       {/* 색상 추가 */}
                       <div className="mb-3">

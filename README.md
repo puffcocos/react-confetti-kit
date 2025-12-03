@@ -2,7 +2,7 @@
 
 React 기반의 인터랙티브한 confetti 효과 에디터이자 라이브러리입니다. [canvas-confetti](https://github.com/catdad/canvas-confetti)를 기반으로 한 사용하기 쉬운 React 훅과 프리셋을 제공합니다.
 
-🎯 **[Live Demo](https://handhand.github.io/confetti-editor/)** | 📚 **[API 문서](./docs/api-reference.md)**
+🎯 **[Live Demo](https://puffcocos.github.io/confetti-editor/)** | 📚 **[API 문서](./docs/api-reference.md)**
 
 ## 주요 기능
 

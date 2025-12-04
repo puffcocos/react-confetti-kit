@@ -1,4 +1,3 @@
-import type { OptionInfo } from './types'
 
 /**
  * 기본값 상수 정의
@@ -15,12 +14,13 @@ export const DEFAULT_VALUES = {
   angle: 90,
   scalar: 1,
   drift: 0,
+  flat: false,
 } as const
 
 /**
  * 옵션 설명 및 정보
  */
-export const OPTION_INFO: Record<string, OptionInfo> = {
+export const OPTION_INFO = {
   particleCount: {
     label: '파티클 개수',
     description: '한 번에 생성되는 confetti 파티클의 개수',
@@ -92,6 +92,11 @@ export const OPTION_INFO: Record<string, OptionInfo> = {
     min: -1,
     max: 1,
     step: 0.1,
+  },
+  flat: {
+    label: '2D 파티클',
+    description: '파티클을 입체감 없이 평면으로 표시',
+    type: 'boolean',
   },
 } as const
 

@@ -29,10 +29,20 @@ export interface CustomShapePreset {
 /**
  * 옵션 정보 타입
  */
-export interface OptionInfo {
-  label: string
-  description: string
-  min: number
-  max: number
-  step?: number
-}
+export type OptionInfo =
+  | {
+      label: string
+      description: string
+      min: number
+      max: number
+      step?: number
+      type?: never
+    }
+  | {
+      label: string
+      description: string
+      type: 'boolean'
+      min?: never
+      max?: never
+      step?: never
+    }

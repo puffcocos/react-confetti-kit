@@ -41,6 +41,7 @@ export function PreviewPage() {
   const [angle, setAngle] = useState<number>(DEFAULT_VALUES.angle)
   const [scalar, setScalar] = useState<number>(DEFAULT_VALUES.scalar)
   const [drift, setDrift] = useState<number>(DEFAULT_VALUES.drift)
+  const [flat, setFlat] = useState<boolean>(DEFAULT_VALUES.flat)
 
   // 색상 옵션
   const [useCustomColors, setUseCustomColors] = useState(false)
@@ -140,6 +141,7 @@ export function PreviewPage() {
     angle,
     scalar,
     drift,
+    flat,
     ...(useCustomColors && customColors.length > 0 ? { colors: customColors } : {}),
     ...(() => {
       // 커스텀 파티클과 기본 도형 결합
@@ -193,6 +195,7 @@ export function PreviewPage() {
     setAngle(DEFAULT_VALUES.angle)
     setScalar(DEFAULT_VALUES.scalar)
     setDrift(DEFAULT_VALUES.drift)
+    setFlat(DEFAULT_VALUES.flat)
     setUseCustomColors(false)
     setCustomColors(['#ff0000', '#00ff00', '#0000ff'])
     setShapes(['square', 'circle'])
@@ -410,10 +413,13 @@ export function PreviewPage() {
     setAngle(effect.angle ?? DEFAULT_VALUES.angle)
     setScalar(effect.scalar ?? DEFAULT_VALUES.scalar)
     setDrift(effect.drift ?? DEFAULT_VALUES.drift)
+    setFlat(effect.flat ?? DEFAULT_VALUES.flat)
 
     if (effect.colors && effect.colors.length > 0) {
       setCustomColors(effect.colors)
       setUseCustomColors(true)
+    } else {
+      setUseCustomColors(false)
     }
 
     if (effect.shapes && effect.shapes.length > 0) {
@@ -892,6 +898,7 @@ export function PreviewPage() {
               angle={angle}
               scalar={scalar}
               drift={drift}
+              flat={flat}
               useCustomColors={useCustomColors}
               customColors={customColors}
               colorInput={colorInput}
@@ -918,6 +925,7 @@ export function PreviewPage() {
               onAngleChange={setAngle}
               onScalarChange={setScalar}
               onDriftChange={setDrift}
+              onFlatChange={setFlat}
               onUseCustomColorsChange={setUseCustomColors}
               onCustomColorsChange={setCustomColors}
               onColorInputChange={setColorInput}

@@ -19,6 +19,7 @@ interface SettingsPanelProps {
   angle: number
   scalar: number
   drift: number
+  flat: boolean
   useCustomColors: boolean
   customColors: string[]
   colorInput: string
@@ -63,6 +64,7 @@ interface SettingsPanelProps {
   onAngleChange: (value: number) => void
   onScalarChange: (value: number) => void
   onDriftChange: (value: number) => void
+  onFlatChange: (value: boolean) => void
   onUseCustomColorsChange: (value: boolean) => void
   onCustomColorsChange: (colors: string[]) => void
   onColorInputChange: (value: string) => void
@@ -113,6 +115,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
     angle,
     scalar,
     drift,
+    flat,
     useCustomColors,
     customColors,
     colorInput,
@@ -145,6 +148,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
     onAngleChange,
     onScalarChange,
     onDriftChange,
+    onFlatChange,
     onUseCustomColorsChange,
     onCustomColorsChange,
     onColorInputChange,
@@ -362,6 +366,26 @@ export function SettingsPanel(props: SettingsPanelProps) {
           onChange={onDriftChange}
           decimal={1}
         />
+
+        {/* Flat */}
+        <div className="col-span-2">
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="text-sm font-medium text-gray-700">
+                {OPTION_INFO.flat.label}
+              </label>
+              <p className="text-xs text-gray-500 mt-0.5">{OPTION_INFO.flat.description}</p>
+            </div>
+            <button
+              onClick={() => onFlatChange(!flat)}
+              className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                flat ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'
+              }`}
+            >
+              {flat ? 'ON' : 'OFF'}
+            </button>
+          </div>
+        </div>
 
         {/* 색상 옵션 */}
         <div className="col-span-2 pt-4 border-t border-gray-200">

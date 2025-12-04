@@ -1,6 +1,5 @@
 import { useCallback, useRef } from 'react'
-// import confetti from 'canvas-confetti'
-import confetti from '../lib/canvas-confetti/confetti'
+import confetti from './lib/canvas-confetti/confetti'
 import type { ConfettiOptions, Shape, CreateTypes, ConfettiFrame } from './types'
 
 interface ShapeFromPathOptions {

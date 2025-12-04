@@ -16,18 +16,23 @@
  * ```
  */
 
-// canvas-confetti의 모든 타입 re-export
-export type {
-  Options as ConfettiOptions,
-  Shape,
-  CreateTypes,
-  GlobalOptions,
-  Origin,
-} from 'canvas-confetti'
+// 로컬 confetti import
+import type { CreateTypes } from './lib/canvas-confetti/confetti'
+import confetti from './lib/canvas-confetti/confetti'
 
-// 로컬 타입 import
-import type { Options as ConfettiOptions, CreateTypes } from 'canvas-confetti'
-import confetti from '../lib/canvas-confetti/confetti'
+// 로컬 canvas-confetti의 기본 타입
+import type { Options as BaseConfettiOptions } from './lib/canvas-confetti/confetti'
+
+// canvas-confetti의 나머지 타입들 re-export
+export type { Shape, CreateTypes, GlobalOptions, Origin } from './lib/canvas-confetti/confetti'
+
+// 새로운 실험적 옵션들을 포함한 확장 타입
+export interface ConfettiOptions extends BaseConfettiOptions {
+  tiltRange?: [number, number]
+  tiltSpeed?: [number, number]
+  wobbleRange?: [number, number]
+  wobbleSpeed?: [number, number]
+}
 
 /**
  * Confetti Frame 타입

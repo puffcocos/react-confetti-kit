@@ -8,6 +8,9 @@
 
 import type { Options, Shape, CreateTypes, GlobalOptions, Origin } from 'canvas-confetti'
 
+// 타입들을 re-export
+export type { Options, Shape, CreateTypes, GlobalOptions, Origin } from 'canvas-confetti'
+
 declare const confetti: {
   (options?: Options): Promise<null> | null
   shapeFromPath(options: { path: string; matrix?: number[] | DOMMatrix }): Shape

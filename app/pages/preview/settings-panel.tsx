@@ -235,7 +235,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
   const generateCodePreview = () => {
     if (presetOptions.length === 0) {
-      return `fire(${JSON.stringify(currentOptions, null, 2)})`
+      return `fire([${JSON.stringify(currentOptions, null, 2)}])`
     }
     return `fire(${JSON.stringify(presetOptions, null, 2)})`
   }

@@ -436,25 +436,42 @@ var module = {}
     } else if (fetti.shape.type === 'svg') {
       // Direct SVG rendering - keeps vector quality
       var rotation = (Math.PI / 10) * fetti.wobble
-      // Use normalized dimensions (viewBox * 0.1) scaled only by options.scalar
       var width = fetti.shape.width * fetti.scalar
       var height = fetti.shape.height * fetti.scalar
 
       context.save()
       context.globalAlpha = 1 - progress
 
-      // Apply transformations
-      context.translate(fetti.x, fetti.y)
-      context.rotate(rotation)
+      if (fetti.flat) {
+        // 2D flat rendering - simple rotation only
+        context.translate(fetti.x, fetti.y)
+        context.rotate(rotation)
 
-      // Draw the SVG image directly
-      context.drawImage(
-        fetti.shape.image,
-        -width / 2,
-        -height / 2,
-        width,
-        height
-      )
+        context.drawImage(
+          fetti.shape.image,
+          -width / 2,
+          -height / 2,
+          width,
+          height
+        )
+      } else {
+        // 3D tilt rendering - apply tilt scales like bitmap shapes
+        var scaleX = Math.abs(x2 - x1) * 0.1
+        var scaleY = Math.abs(y2 - y1) * 0.1
+
+        // Apply rotation and scale transformations
+        context.translate(fetti.x, fetti.y)
+        context.rotate(rotation)
+        context.scale(scaleX, scaleY)
+
+        context.drawImage(
+          fetti.shape.image,
+          -width / 2,
+          -height / 2,
+          width,
+          height
+        )
+      }
 
       context.restore()
     } else if (fetti.shape.type === 'bitmap') {

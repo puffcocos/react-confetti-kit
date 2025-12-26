@@ -965,22 +965,6 @@ export function SettingsPanel(props: SettingsPanelProps) {
                     />
                   </div>
 
-                  {/* Scalar 조절 */}
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-2">
-                      크기 조절 (Scalar): {customShapeScalar}
-                    </label>
-                    <input
-                      type="range"
-                      min="0.5"
-                      max="3"
-                      step="0.1"
-                      value={customShapeScalar}
-                      onChange={(e) => onCustomShapeScalarChange(parseFloat(e.target.value))}
-                      className="w-full"
-                    />
-                  </div>
-
                   {/* SVG 미리보기 */}
                   {customShapeSvg && (
                     <div className="p-3 bg-gray-50 border border-gray-300 rounded">

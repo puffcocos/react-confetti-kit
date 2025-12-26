@@ -436,8 +436,10 @@ var module = {}
     } else if (fetti.shape.type === 'svg') {
       // Direct SVG rendering - keeps vector quality
       var rotation = (Math.PI / 10) * fetti.wobble
-      var width = fetti.shape.width * fetti.scalar
-      var height = fetti.shape.height * fetti.scalar
+      // Apply both shape-specific scalar and confetti options scalar
+      var shapeScalar = fetti.shape.scalar || 1
+      var width = fetti.shape.width * shapeScalar * fetti.scalar
+      var height = fetti.shape.height * shapeScalar * fetti.scalar
 
       context.save()
       context.globalAlpha = 1 - progress
@@ -900,11 +902,13 @@ var module = {}
 
   function shapeFromSvg(svgData) {
     var svgString
+    var scalar = 1
 
     if (typeof svgData === 'string') {
       svgString = svgData
     } else {
       svgString = svgData.svg
+      scalar = svgData.scalar || 1
     }
 
     // Parse SVG to extract dimensions
@@ -940,12 +944,13 @@ var module = {}
         URL.revokeObjectURL(url)
 
         // Return SVG shape with Image object for direct rendering
-        // Store original dimensions - scalar will be applied during rendering
+        // Store original dimensions and shape-specific scalar
         resolve({
           type: 'svg',
           image: img,
           width: width,
           height: height,
+          scalar: scalar, // Store shape-specific scalar
         })
       }
 

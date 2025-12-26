@@ -72,3 +72,17 @@ body {
 .animate-fade-in {
   animation: fade-in 0.3s ease-out;
 }
+
+/* 단순 Fade-in (Safari 덜컹거림 방지용) */
+@keyframes fade-in-simple {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in-simple {
+  animation: fade-in-simple 0.2s ease-out;
+}

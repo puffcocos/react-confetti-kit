@@ -1196,11 +1196,11 @@ export function SettingsPanel(props: SettingsPanelProps) {
       <div className="mt-6 pt-6 border-t border-gray-200">
         {editingPresetIndex !== null && editingEffectIndex !== null ? (
           // 수정 모드
-          <div className="animate-fade-in space-y-2">
+          <div className="animate-fade-in-simple space-y-2">
             {!useCustomCanvas && (
               <button
                 onClick={onFireCustom}
-                className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-bold text-sm hover:from-purple-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl"
+                className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-bold text-sm hover:from-purple-700 hover:to-blue-700 active:scale-[0.98] transition-[transform,colors,shadow] duration-200 shadow-lg hover:shadow-xl will-change-transform select-none"
               >
                 🎉 {customPresets[editingPresetIndex].name} 효과 {editingEffectIndex + 1} 테스트
               </button>
@@ -1223,7 +1223,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
         ) : (
           // 일반 모드
           !useCustomCanvas && (
-            <div className="animate-fade-in">
+            <div className="animate-fade-in-simple">
               <FireButton onFire={onFireCustom} label="효과 테스트" />
             </div>
           )

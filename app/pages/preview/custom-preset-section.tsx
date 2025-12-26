@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { ConfettiOptions } from '~/shared/confetti/types'
 import type { CustomPreset } from './types'
+import { formatAsFireCode } from './code-formatter'
 
 interface CustomPresetSectionProps {
   presetOptions: ConfettiOptions[]
@@ -233,10 +234,7 @@ export function CustomPresetSection({
                     {selectedPresetForCode === index && (
                       <button
                         onClick={() =>
-                          onCopyToClipboard(
-                            `fire(${JSON.stringify(preset.options, null, 2)})`,
-                            index
-                          )
+                          onCopyToClipboard(formatAsFireCode(preset.options), index)
                         }
                         className="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white text-xs rounded transition-colors"
                         title="코드 복사"
@@ -249,7 +247,7 @@ export function CustomPresetSection({
                     <>
                       <div className="bg-gray-900 rounded p-3 overflow-x-auto">
                         <pre className="text-xs text-green-400 font-mono">
-                          <code>{`fire(${JSON.stringify(preset.options, null, 2)})`}</code>
+                          <code>{formatAsFireCode(preset.options)}</code>
                         </pre>
                       </div>
                       <p className="text-xs text-gray-500 mt-2">

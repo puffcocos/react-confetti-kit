@@ -436,10 +436,9 @@ var module = {}
     } else if (fetti.shape.type === 'svg') {
       // Direct SVG rendering - keeps vector quality
       var rotation = (Math.PI / 10) * fetti.wobble
-      // Apply both shape-specific scalar and confetti options scalar
-      var shapeScalar = fetti.shape.scalar || 1
-      var width = fetti.shape.width * shapeScalar * fetti.scalar
-      var height = fetti.shape.height * shapeScalar * fetti.scalar
+      // Use normalized dimensions (viewBox * 0.1) scaled only by options.scalar
+      var width = fetti.shape.width * fetti.scalar
+      var height = fetti.shape.height * fetti.scalar
 
       context.save()
       context.globalAlpha = 1 - progress
@@ -902,13 +901,12 @@ var module = {}
 
   function shapeFromSvg(svgData) {
     var svgString
-    var scalar = 1
 
     if (typeof svgData === 'string') {
       svgString = svgData
     } else {
       svgString = svgData.svg
-      scalar = svgData.scalar || 1
+      // Ignore svgData.scalar - we only use options.scalar now
     }
 
     // Parse SVG to extract dimensions
@@ -933,6 +931,10 @@ var module = {}
       height = parseFloat(svgElement.getAttribute('height') || '100')
     }
 
+    // Use viewBox dimensions directly as base size
+    // Users control final size with options.scalar (파티클 배율)
+    // scalar: 1 = viewBox size as-is
+
     // Create an Image object from SVG for direct rendering
     // This preserves vector quality - no bitmap conversion!
     var img = new Image()
@@ -944,13 +946,12 @@ var module = {}
         URL.revokeObjectURL(url)
 
         // Return SVG shape with Image object for direct rendering
-        // Store original dimensions and shape-specific scalar
+        // Only store normalized dimensions (no shape-specific scalar)
         resolve({
           type: 'svg',
           image: img,
           width: width,
           height: height,
-          scalar: scalar, // Store shape-specific scalar
         })
       }
 

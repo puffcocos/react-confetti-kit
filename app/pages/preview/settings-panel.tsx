@@ -301,23 +301,41 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
     if (!shape) return `${indentStr}null`
 
-    // Promise인 경우 (SVG)
-    if (typeof shape === 'object' && 'then' in shape) {
-      if (customShapeType === 'svg' && customShapeSvg.trim()) {
-        const svgStr = customShapeSvg.replace(/\n/g, ' ').replace(/\s+/g, ' ')
-        return `${indentStr}createShape({ svg: "${svgStr}", scalar: ${customShapeScalar} })`
-      }
-      return `${indentStr}createShape({ ... })`
+    // 기본 도형 문자열인 경우 (circle, square, star)
+    if (typeof shape === 'string') {
+      return `${indentStr}"${shape}"`
     }
 
-    // 이미 resolve된 shape 객체인 경우
-    if (shape.type === 'svg') {
-      return `${indentStr}createShape({ svg: "...", scalar: ${customShapeScalar || 1} })`
-    } else if (shape.type === 'path') {
-      return `${indentStr}createShape({ path: "..." })`
-    } else if (typeof shape === 'string') {
-      // 기본 도형 (circle, square, star)
-      return `${indentStr}"${shape}"`
+    // Promise인 경우 또는 resolve된 shape 객체인 경우
+    const isPromise = typeof shape === 'object' && 'then' in shape
+    const isSvgShape = shape.type === 'svg'
+    const isPathShape = shape.type === 'path'
+
+    if (isPromise || isSvgShape || isPathShape) {
+      // 현재 입력 중인 커스텀 shape 확인
+      if (customShapeType === 'svg' && customShapeSvg.trim()) {
+        const svgStr = customShapeSvg.replace(/\n/g, ' ').replace(/\s+/g, ' ')
+        return `${indentStr}createShape({ svg: \`${svgStr}\`, scalar: ${customShapeScalar} })`
+      } else if (customShapeType === 'path' && customShapePath.trim()) {
+        return `${indentStr}createShape({ path: "${customShapePath}" })`
+      }
+
+      // 선택된 저장된 커스텀 shape 확인
+      for (const preset of selectedCustomShapes) {
+        if (preset.type === 'svg' && preset.svg) {
+          const svgStr = preset.svg.replace(/\n/g, ' ').replace(/\s+/g, ' ')
+          return `${indentStr}createShape({ svg: \`${svgStr}\`, scalar: ${preset.scalar || 1} })`
+        } else if (preset.type === 'path' && preset.path) {
+          return `${indentStr}createShape({ path: "${preset.path}" })`
+        }
+      }
+
+      // fallback
+      if (isSvgShape) {
+        return `${indentStr}createShape({ svg: "...", scalar: 1 })`
+      } else if (isPathShape) {
+        return `${indentStr}createShape({ path: "..." })`
+      }
     }
 
     return `${indentStr}null`

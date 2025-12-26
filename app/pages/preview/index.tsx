@@ -207,15 +207,13 @@ export function PreviewPage() {
           })
           allShapes.push(...customShapes)
         }
-
-        // 기본 도형도 함께 사용
-        if (shapes.length > 0) {
-          allShapes.push(...shapes)
-        }
       }
 
       return allShapes.length > 0 ? { shapes: allShapes } : {}
     })(),
+    // 내부 메타데이터 (UI 동기화 및 코드 생성용)
+    _useCustomShapes: useCustomShapes,
+    _selectedCustomShapes: useCustomShapes ? [...selectedCustomShapes] : undefined,
   }
 
   // 기본값으로 리셋
@@ -379,7 +377,25 @@ export function PreviewPage() {
   const fireCustomPreset = async () => {
     if (activeCustomPreset !== null) {
       const preset = customPresets[activeCustomPreset]
-      const resolvedOptions = await resolveShapePromises(preset.options)
+
+      // shapeMeta가 있으면 shapes를 재생성
+      let optionsWithShapes: ConfettiOptions[] = preset.options
+      if (preset.shapeMeta && preset.shapeMeta.length > 0) {
+        optionsWithShapes = preset.options.map((option) => {
+          const shapes = preset.shapeMeta!.map((shapeMeta) => {
+            if (shapeMeta.type === 'svg') {
+              return createShape({ svg: shapeMeta.svg!, scalar: shapeMeta.scalar })
+            }
+            return createShape({ path: shapeMeta.path!, matrix: shapeMeta.matrix })
+          })
+          return {
+            ...option,
+            shapes: shapes as any, // Shape | Promise<Shape> 타입 허용
+          }
+        })
+      }
+
+      const resolvedOptions = await resolveShapePromises(optionsWithShapes)
       fire(resolvedOptions)
     }
   }
@@ -417,7 +433,7 @@ export function PreviewPage() {
 
   // 프리셋에 현재 옵션 추가
   const addToPreset = () => {
-    setPresetOptions([...presetOptions, currentOptions])
+    setPresetOptions([...presetOptions, { ...currentOptions }])
   }
 
   // 프리셋에서 옵션 제거
@@ -460,7 +476,11 @@ export function PreviewPage() {
 
     const newPreset: CustomPreset = {
       name: presetName,
-      options: presetOptions,
+      options: presetOptions.map((option) => ({
+        ...option,
+        _useCustomShapes: option._useCustomShapes,
+        _selectedCustomShapes: option._selectedCustomShapes,
+      })),
       shapeMeta: shapeMeta.length > 0 ? shapeMeta : undefined,
     }
 
@@ -487,9 +507,37 @@ export function PreviewPage() {
   }
 
   // 저장된 프리셋에 효과 추가
+  // 저장된 프리셋에 효과 추가
   const addEffectToSavedPreset = (presetIndex: number) => {
     const updatedPresets = [...customPresets]
-    updatedPresets[presetIndex].options = [...updatedPresets[presetIndex].options, currentOptions]
+    updatedPresets[presetIndex].options = [...updatedPresets[presetIndex].options, { ...currentOptions }]
+
+    // shapeMeta 업데이트 (커스텀 파티클 사용 시 고수준 메타데이터 보존용)
+    if (useCustomShapes) {
+      const existingShapeMeta = updatedPresets[presetIndex].shapeMeta || []
+      const newShapeMeta: CustomShapePreset[] = []
+
+      if (customShapeType === 'svg' && customShapeSvg.trim()) {
+        newShapeMeta.push({
+          name: 'custom-svg',
+          type: 'svg',
+          svg: customShapeSvg,
+          scalar: customShapeScalar,
+        })
+      } else if (customShapeType === 'path' && customShapePath.trim()) {
+        newShapeMeta.push({
+          name: 'custom-path',
+          type: 'path',
+          path: customShapePath,
+        })
+      }
+
+      newShapeMeta.push(...selectedCustomShapes)
+
+      // 기존 shapeMeta와 병합 (중복 제거 로직은 단순화함)
+      updatedPresets[presetIndex].shapeMeta = [...existingShapeMeta, ...newShapeMeta]
+    }
+
     setCustomPresets(updatedPresets)
     alert(
       `"${customPresets[presetIndex].name}" 프리셋에 효과가 추가되었습니다! (총 ${updatedPresets[presetIndex].options.length}개 효과)`
@@ -576,8 +624,19 @@ export function PreviewPage() {
       setUseCustomColors(false)
     }
 
+    // 커스텀 파티클 복원
+    const useShapes = effect._useCustomShapes ?? false
+    const selShapes = effect._selectedCustomShapes ?? []
+    setUseCustomShapes(useShapes)
+    setSelectedCustomShapes(selShapes)
+
     if (effect.shapes && effect.shapes.length > 0) {
-      setShapes(effect.shapes as string[])
+      const basicShapes = effect.shapes.filter((s) => typeof s === 'string') as string[]
+      setShapes(basicShapes)
+    } else if (useShapes) {
+      setShapes([])
+    } else {
+      setShapes(['square', 'circle'])
     }
 
     setEditingPresetIndex(presetIndex)

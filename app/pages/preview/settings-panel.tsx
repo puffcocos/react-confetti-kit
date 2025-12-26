@@ -246,10 +246,81 @@ export function SettingsPanel(props: SettingsPanelProps) {
   }
 
   const generateCodePreview = () => {
-    if (presetOptions.length === 0) {
-      return `fire([${JSON.stringify(currentOptions, null, 2)}])`
+    const options = presetOptions.length === 0 ? [currentOptions] : presetOptions
+    return `fire(${formatOptionsAsCode(options)})`
+  }
+
+  // 옵션을 JavaScript 코드 문자열로 포맷팅
+  const formatOptionsAsCode = (options: any[]): string => {
+    if (options.length === 1) {
+      return formatSingleOption(options[0])
     }
-    return `fire(${JSON.stringify(presetOptions, null, 2)})`
+
+    const formattedOptions = options.map((opt) => formatSingleOption(opt, 2))
+    return `[\n${formattedOptions.join(',\n')}\n]`
+  }
+
+  // 단일 옵션을 JavaScript 코드로 포맷팅
+  const formatSingleOption = (option: any, indent = 0): string => {
+    const { shapes, ...rest } = option
+    const indentStr = ' '.repeat(indent)
+    const lines: string[] = []
+
+    // 기본 옵션들을 JSON으로 변환
+    const restJson = JSON.stringify(rest, null, 2)
+      .split('\n')
+      .map((line) => indentStr + line)
+
+    // shapes가 있는 경우
+    if (shapes && shapes.length > 0) {
+      // 마지막 줄의 } 제거
+      const restLines = restJson.slice(0, -1)
+      lines.push(...restLines)
+
+      // shapes 추가
+      lines.push(`${indentStr}  "shapes": [`)
+
+      shapes.forEach((shape: any, index: number) => {
+        const shapeCode = formatShapeAsCode(shape, indent + 4)
+        const comma = index < shapes.length - 1 ? ',' : ''
+        lines.push(`${shapeCode}${comma}`)
+      })
+
+      lines.push(`${indentStr}  ]`)
+      lines.push(`${indentStr}}`)
+    } else {
+      lines.push(...restJson)
+    }
+
+    return lines.join('\n')
+  }
+
+  // Shape 객체를 코드 문자열로 변환
+  const formatShapeAsCode = (shape: any, indent: number): string => {
+    const indentStr = ' '.repeat(indent)
+
+    if (!shape) return `${indentStr}null`
+
+    // Promise인 경우 (SVG)
+    if (typeof shape === 'object' && 'then' in shape) {
+      if (customShapeType === 'svg' && customShapeSvg.trim()) {
+        const svgStr = customShapeSvg.replace(/\n/g, ' ').replace(/\s+/g, ' ')
+        return `${indentStr}createShape({ svg: "${svgStr}", scalar: ${customShapeScalar} })`
+      }
+      return `${indentStr}createShape({ ... })`
+    }
+
+    // 이미 resolve된 shape 객체인 경우
+    if (shape.type === 'svg') {
+      return `${indentStr}createShape({ svg: "...", scalar: ${customShapeScalar || 1} })`
+    } else if (shape.type === 'path') {
+      return `${indentStr}createShape({ path: "..." })`
+    } else if (typeof shape === 'string') {
+      // 기본 도형 (circle, square, star)
+      return `${indentStr}"${shape}"`
+    }
+
+    return `${indentStr}null`
   }
 
   return (

@@ -433,6 +433,29 @@ var module = {}
           (Math.PI / 10) * fetti.wobble
         )
       )
+    } else if (fetti.shape.type === 'svg') {
+      // Direct SVG rendering - keeps vector quality
+      var rotation = (Math.PI / 10) * fetti.wobble
+      var width = fetti.shape.width * fetti.scalar
+      var height = fetti.shape.height * fetti.scalar
+
+      context.save()
+      context.globalAlpha = 1 - progress
+
+      // Apply transformations
+      context.translate(fetti.x, fetti.y)
+      context.rotate(rotation)
+
+      // Draw the SVG image directly
+      context.drawImage(
+        fetti.shape.image,
+        -width / 2,
+        -height / 2,
+        width,
+        height
+      )
+
+      context.restore()
     } else if (fetti.shape.type === 'bitmap') {
       var rotation = (Math.PI / 10) * fetti.wobble
       var scaleX = Math.abs(x2 - x1) * 0.1
@@ -676,6 +699,19 @@ var module = {}
         document.body.appendChild(canvas)
       }
 
+      // Check if shapes contain SVG type BEFORE initializing worker
+      // SVG shapes cannot be sent to Worker (Image objects can't be cloned)
+      var shapes = prop(options, 'shapes')
+      var hasSvgShape = false
+      if (shapes && Array.isArray(shapes)) {
+        for (var i = 0; i < shapes.length; i++) {
+          if (shapes[i] && shapes[i].type === 'svg') {
+            hasSvgShape = true
+            break
+          }
+        }
+      }
+
       if (allowResize && !initialized) {
         // initialize the size of a user-supplied canvas
         resizer(canvas)
@@ -686,13 +722,14 @@ var module = {}
         height: canvas.height,
       }
 
-      if (worker && !initialized) {
+      // Only initialize worker if no SVG shapes
+      if (worker && !initialized && !hasSvgShape) {
         worker.init(canvas)
       }
 
       initialized = true
 
-      if (worker) {
+      if (worker && !hasSvgShape) {
         canvas.__confetti_initialized = true
       }
 
@@ -745,7 +782,8 @@ var module = {}
         global.addEventListener('resize', onResize, false)
       }
 
-      if (worker) {
+      // Use worker only if no SVG shapes (already checked above)
+      if (worker && !hasSvgShape) {
         return worker.fire(options, size, done)
       }
 
@@ -860,6 +898,66 @@ var module = {}
     }
   }
 
+  function shapeFromSvg(svgData) {
+    var svgString
+
+    if (typeof svgData === 'string') {
+      svgString = svgData
+    } else {
+      svgString = svgData.svg
+    }
+
+    // Parse SVG to extract dimensions
+    var parser = new DOMParser()
+    var svgDoc = parser.parseFromString(svgString, 'image/svg+xml')
+    var svgElement = svgDoc.querySelector('svg')
+
+    if (!svgElement) {
+      throw new Error('Invalid SVG string')
+    }
+
+    // Get viewBox or width/height
+    var viewBox = svgElement.getAttribute('viewBox')
+    var width, height
+
+    if (viewBox) {
+      var parts = viewBox.split(/\s+|,/)
+      width = parseFloat(parts[2])
+      height = parseFloat(parts[3])
+    } else {
+      width = parseFloat(svgElement.getAttribute('width') || '100')
+      height = parseFloat(svgElement.getAttribute('height') || '100')
+    }
+
+    // Create an Image object from SVG for direct rendering
+    // This preserves vector quality - no bitmap conversion!
+    var img = new Image()
+    var svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' })
+    var url = URL.createObjectURL(svgBlob)
+
+    return new Promise(function (resolve, reject) {
+      img.onload = function () {
+        URL.revokeObjectURL(url)
+
+        // Return SVG shape with Image object for direct rendering
+        // Store original dimensions - scalar will be applied during rendering
+        resolve({
+          type: 'svg',
+          image: img,
+          width: width,
+          height: height,
+        })
+      }
+
+      img.onerror = function () {
+        URL.revokeObjectURL(url)
+        reject(new Error('Failed to load SVG'))
+      }
+
+      img.src = url
+    })
+  }
+
   function shapeFromText(textData) {
     var text,
       scalar = 1,
@@ -888,7 +986,7 @@ var module = {}
     ctx.font = font
     var size = ctx.measureText(text)
     var width = Math.ceil(size.actualBoundingBoxRight + size.actualBoundingBoxLeft)
-    var height = Math.ceil(size.actualBoundingBoxAscent + size.actualBoundingBoxDescent)
+    var height = Math.ceil(size.actualBoundingBoxDescent + size.actualBoundingBoxAscent)
 
     var padding = 2
     var x = size.actualBoundingBoxLeft + padding
@@ -921,6 +1019,7 @@ var module = {}
   }
   module.exports.create = confettiCannon
   module.exports.shapeFromPath = shapeFromPath
+  module.exports.shapeFromSvg = shapeFromSvg
   module.exports.shapeFromText = shapeFromText
 })(
   (function () {

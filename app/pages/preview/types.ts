@@ -22,8 +22,11 @@ export interface CustomColorPreset {
  */
 export interface CustomShapePreset {
   name: string
-  path: string
+  type: 'path' | 'svg' // 'path' for d path, 'svg' for full SVG markup
+  path?: string // SVG d path (type이 'path'일 때)
+  svg?: string // Full SVG markup (type이 'svg'일 때)
   matrix?: number[] // 미리 계산된 transform matrix (성능 최적화용)
+  scalar?: number // SVG 크기 조절 (type이 'svg'일 때)
 }
 
 /**

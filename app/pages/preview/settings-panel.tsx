@@ -52,6 +52,9 @@ interface SettingsPanelProps {
   // 커스텀 파티클
   useCustomShapes: boolean
   customShapePath: string
+  customShapeSvg: string
+  customShapeType: 'path' | 'svg'
+  customShapeScalar: number
   customShapePresets: CustomShapePreset[]
   selectedCustomShapes: CustomShapePreset[]
   shapePresetName: string
@@ -107,6 +110,9 @@ interface SettingsPanelProps {
   // 커스텀 파티클 관련
   onUseCustomShapesChange: (value: boolean) => void
   onCustomShapePathChange: (value: string) => void
+  onCustomShapeSvgChange: (value: string) => void
+  onCustomShapeTypeChange: (value: 'path' | 'svg') => void
+  onCustomShapeScalarChange: (value: number) => void
   onShapePresetNameChange: (value: string) => void
   onAddCustomShapePreset: () => void
   onLoadExampleShape: (preset: CustomShapePreset) => void
@@ -160,6 +166,9 @@ export function SettingsPanel(props: SettingsPanelProps) {
     activeColorPreset,
     useCustomShapes,
     customShapePath,
+    customShapeSvg,
+    customShapeType,
+    customShapeScalar,
     customShapePresets,
     selectedCustomShapes,
     shapePresetName,
@@ -204,6 +213,9 @@ export function SettingsPanel(props: SettingsPanelProps) {
     onCancelEditingColorPreset,
     onUseCustomShapesChange,
     onCustomShapePathChange,
+    onCustomShapeSvgChange,
+    onCustomShapeTypeChange,
+    onCustomShapeScalarChange,
     onShapePresetNameChange,
     onAddCustomShapePreset,
     onLoadExampleShape,
@@ -842,10 +854,10 @@ export function SettingsPanel(props: SettingsPanelProps) {
           </div>
         </div>
 
-        {/* 커스텀 파티클 (shapeFromPath) */}
+        {/* 커스텀 파티클 (shapeFromPath / shapeFromSvg) */}
         <div className="col-span-2 pt-4 border-t border-gray-200">
           <div className="flex items-center justify-between mb-3">
-            <label className="text-sm font-medium text-gray-700">커스텀 파티클 (SVG Path)</label>
+            <label className="text-sm font-medium text-gray-700">커스텀 파티클</label>
             <button
               onClick={() => onUseCustomShapesChange(!useCustomShapes)}
               className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
@@ -870,33 +882,113 @@ export function SettingsPanel(props: SettingsPanelProps) {
                 </ul>
               </div>
 
-              {/* SVG Path 입력 */}
+              {/* 타입 선택 */}
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-2">
-                  SVG Path 문자열
+                  입력 타입
                 </label>
-                <textarea
-                  value={customShapePath}
-                  onChange={(e) => onCustomShapePathChange(e.target.value)}
-                  placeholder="예: M0 10 L5 0 L10 10z"
-                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm text-gray-800 font-mono resize-none"
-                  rows={3}
-                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => onCustomShapeTypeChange('path')}
+                    className={`flex-1 px-3 py-2 rounded text-xs font-medium transition-colors ${
+                      customShapeType === 'path'
+                        ? 'bg-purple-600 text-white'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                  >
+                    SVG Path (d)
+                  </button>
+                  <button
+                    onClick={() => onCustomShapeTypeChange('svg')}
+                    className={`flex-1 px-3 py-2 rounded text-xs font-medium transition-colors ${
+                      customShapeType === 'svg'
+                        ? 'bg-purple-600 text-white'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                  >
+                    Full SVG
+                  </button>
+                </div>
               </div>
 
-              {/* SVG 미리보기 */}
-              {customShapePath && (
-                <div className="p-3 bg-gray-50 border border-gray-300 rounded">
-                  <label className="block text-xs font-medium text-gray-600 mb-2">미리보기</label>
-                  <div className="flex items-center justify-center bg-white rounded p-4 border border-gray-200">
-                    <SvgPathPreview
-                      path={customShapePath}
-                      width={100}
-                      height={100}
-                      className="text-purple-600"
+              {/* SVG Path 입력 */}
+              {customShapeType === 'path' && (
+                <>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-2">
+                      SVG Path 문자열 (d 속성)
+                    </label>
+                    <textarea
+                      value={customShapePath}
+                      onChange={(e) => onCustomShapePathChange(e.target.value)}
+                      placeholder="예: M0 10 L5 0 L10 10z"
+                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm text-gray-800 font-mono resize-none"
+                      rows={3}
                     />
                   </div>
-                </div>
+
+                  {/* SVG 미리보기 */}
+                  {customShapePath && (
+                    <div className="p-3 bg-gray-50 border border-gray-300 rounded">
+                      <label className="block text-xs font-medium text-gray-600 mb-2">미리보기</label>
+                      <div className="flex items-center justify-center bg-white rounded p-4 border border-gray-200">
+                        <SvgPathPreview
+                          path={customShapePath}
+                          width={100}
+                          height={100}
+                          className="text-purple-600"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Full SVG 입력 */}
+              {customShapeType === 'svg' && (
+                <>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-2">
+                      Full SVG 마크업
+                    </label>
+                    <textarea
+                      value={customShapeSvg}
+                      onChange={(e) => onCustomShapeSvgChange(e.target.value)}
+                      placeholder={'<svg viewBox="0 0 100 100">\n  <circle cx="50" cy="50" r="40"/>\n</svg>'}
+                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm text-gray-800 font-mono resize-none"
+                      rows={5}
+                    />
+                  </div>
+
+                  {/* Scalar 조절 */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-2">
+                      크기 조절 (Scalar): {customShapeScalar}
+                    </label>
+                    <input
+                      type="range"
+                      min="0.5"
+                      max="3"
+                      step="0.1"
+                      value={customShapeScalar}
+                      onChange={(e) => onCustomShapeScalarChange(parseFloat(e.target.value))}
+                      className="w-full"
+                    />
+                  </div>
+
+                  {/* SVG 미리보기 */}
+                  {customShapeSvg && (
+                    <div className="p-3 bg-gray-50 border border-gray-300 rounded">
+                      <label className="block text-xs font-medium text-gray-600 mb-2">미리보기</label>
+                      <div className="flex items-center justify-center bg-white rounded p-4 border border-gray-200">
+                        <div
+                          className="max-w-full [&>svg]:max-w-full [&>svg]:h-auto [&>svg]:w-auto"
+                          dangerouslySetInnerHTML={{ __html: customShapeSvg }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
 
               {/* 커스텀 파티클 저장 */}
@@ -987,12 +1079,19 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
                           {/* 하단: 미리보기 */}
                           <div className="flex items-center justify-center bg-gray-50 rounded p-2 border border-gray-200">
-                            <SvgPathPreview
-                              path={preset.path}
-                              width={40}
-                              height={40}
-                              className="text-purple-600"
-                            />
+                            {preset.type === 'path' && preset.path ? (
+                              <SvgPathPreview
+                                path={preset.path}
+                                width={40}
+                                height={40}
+                                className="text-purple-600"
+                              />
+                            ) : preset.type === 'svg' && preset.svg ? (
+                              <div
+                                className="w-10 h-10 [&>svg]:w-full [&>svg]:h-full"
+                                dangerouslySetInnerHTML={{ __html: preset.svg }}
+                              />
+                            ) : null}
                           </div>
                         </div>
                       )

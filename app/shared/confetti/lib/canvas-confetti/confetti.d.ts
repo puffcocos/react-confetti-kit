@@ -8,15 +8,18 @@
 
 import type { Options, Shape, CreateTypes, GlobalOptions, Origin } from 'canvas-confetti'
 
-// 타입들을 re-export
-export type { Options, Shape, CreateTypes, GlobalOptions, Origin } from 'canvas-confetti'
+declare namespace confetti {
+  export { Options, Shape, CreateTypes, GlobalOptions, Origin }
+}
 
-declare const confetti: {
-  (options?: Options): Promise<null> | null
-  shapeFromPath(options: { path: string; matrix?: number[] | DOMMatrix }): Shape
-  shapeFromText(options: { text: string; scalar?: number; fontFamily?: string }): Shape
-  create(canvas: HTMLCanvasElement | null, options?: GlobalOptions): CreateTypes
-  reset(): void
+declare function confetti(options?: Options): Promise<null> | null
+
+declare namespace confetti {
+  function shapeFromPath(options: { path: string; matrix?: number[] | DOMMatrix }): Shape
+  function shapeFromSvg(options: { svg: string; scalar?: number }): Promise<Shape>
+  function shapeFromText(options: { text: string; scalar?: number; fontFamily?: string }): Shape
+  function create(canvas: HTMLCanvasElement | null, options?: GlobalOptions): CreateTypes
+  function reset(): void
 }
 
 export = confetti

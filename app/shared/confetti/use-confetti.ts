@@ -7,6 +7,11 @@ interface ShapeFromPathOptions {
   matrix?: number[]
 }
 
+interface ShapeFromSvgOptions {
+  svg: string
+  scalar?: number
+}
+
 /**
  * useConfetti Hook
  *
@@ -74,14 +79,23 @@ export function useConfetti() {
     }
   }, [])
 
-  const createShape = useCallback((options: ShapeFromPathOptions): Shape => {
-    if (options.matrix) {
-      // 배열을 DOMMatrix로 변환
-      const matrix = new DOMMatrix(options.matrix)
-      return confetti.shapeFromPath({ path: options.path, matrix })
-    }
-    return confetti.shapeFromPath({ path: options.path })
-  }, [])
+  const createShape = useCallback(
+    (options: ShapeFromPathOptions | ShapeFromSvgOptions): Shape | Promise<Shape> => {
+      // SVG 타입인 경우
+      if ('svg' in options) {
+        return confetti.shapeFromSvg(options)
+      }
+
+      // Path 타입인 경우
+      if (options.matrix) {
+        // 배열을 DOMMatrix로 변환
+        const matrix = new DOMMatrix(options.matrix)
+        return confetti.shapeFromPath({ path: options.path, matrix })
+      }
+      return confetti.shapeFromPath({ path: options.path })
+    },
+    []
+  )
 
   /**
    * 프레임 기반으로 confetti를 실행합니다.

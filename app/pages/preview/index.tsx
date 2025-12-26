@@ -91,6 +91,9 @@ export function PreviewPage() {
   // 커스텀 파티클 옵션
   const [useCustomShapes, setUseCustomShapes] = useState(false)
   const [customShapePath, setCustomShapePath] = useState('')
+  const [customShapeSvg, setCustomShapeSvg] = useState('')
+  const [customShapeType, setCustomShapeType] = useState<'path' | 'svg'>('path')
+  const [customShapeScalar, setCustomShapeScalar] = useState(1)
   const [customShapePresets, setCustomShapePresets] = useLocalStorage<CustomShapePreset[]>(
     'confetti-custom-shape-presets',
     []
@@ -177,21 +180,31 @@ export function PreviewPage() {
 
       // 커스텀 파티클 추가
       if (useCustomShapes) {
-        // 입력 중인 Path가 있으면 바로 사용 (저장하지 않아도 테스트 가능)
-        if (customShapePath.trim()) {
+        // 입력 중인 Path 또는 SVG가 있으면 바로 사용 (저장하지 않아도 테스트 가능)
+        if (customShapeType === 'path' && customShapePath.trim()) {
           try {
             const shape = createShape({ path: customShapePath })
             allShapes.push(shape)
           } catch (error) {
             console.error('Invalid custom shape path:', error)
           }
+        } else if (customShapeType === 'svg' && customShapeSvg.trim()) {
+          try {
+            const shape = createShape({ svg: customShapeSvg, scalar: customShapeScalar })
+            allShapes.push(shape)
+          } catch (error) {
+            console.error('Invalid custom shape svg:', error)
+          }
         }
 
         // 선택된 저장된 파티클도 추가
         if (selectedCustomShapes.length > 0) {
-          const customShapes = selectedCustomShapes.map((preset) =>
-            createShape({ path: preset.path, matrix: preset.matrix })
-          )
+          const customShapes = selectedCustomShapes.map((preset) => {
+            if (preset.type === 'svg') {
+              return createShape({ svg: preset.svg!, scalar: preset.scalar })
+            }
+            return createShape({ path: preset.path!, matrix: preset.matrix })
+          })
           allShapes.push(...customShapes)
         }
 
@@ -333,8 +346,34 @@ export function PreviewPage() {
   }
 
   // 커스텀 옵션으로 실행
-  const fireCustom = () => {
-    fire(currentOptions)
+  const fireCustom = async () => {
+    // SVG shape가 포함되어 있는지 확인
+    const hasSvgShape =
+      (customShapeType === 'svg' && customShapeSvg.trim()) ||
+      selectedCustomShapes.some((preset) => preset.type === 'svg')
+
+    if (hasSvgShape) {
+      // SVG shape가 있으면 Promise를 해결한 후 flat: true로 fire (회전/기울어짐 제거)
+      const optionsWithResolvedShapes = { ...currentOptions, flat: true }
+
+      if (optionsWithResolvedShapes.shapes && Array.isArray(optionsWithResolvedShapes.shapes)) {
+        const resolvedShapes = await Promise.all(
+          optionsWithResolvedShapes.shapes.map((shape) => {
+            // Promise인지 확인
+            if (shape && typeof shape === 'object' && 'then' in shape) {
+              return shape
+            }
+            return Promise.resolve(shape)
+          })
+        )
+        optionsWithResolvedShapes.shapes = resolvedShapes
+      }
+
+      fire(optionsWithResolvedShapes)
+    } else {
+      // SVG가 없으면 바로 fire
+      fire(currentOptions)
+    }
   }
 
   // 프리셋에 현재 옵션 추가
@@ -590,8 +629,13 @@ export function PreviewPage() {
 
   // 커스텀 파티클 프리셋에 추가
   const addCustomShapePreset = () => {
-    if (!customShapePath.trim()) {
+    if (customShapeType === 'path' && !customShapePath.trim()) {
       alert('SVG Path를 입력해주세요')
+      return
+    }
+
+    if (customShapeType === 'svg' && !customShapeSvg.trim()) {
+      alert('SVG 마크업을 입력해주세요')
       return
     }
 
@@ -601,28 +645,42 @@ export function PreviewPage() {
     }
 
     try {
-      // Path 유효성 검증을 위해 createShape 호출
-      createShape({ path: customShapePath })
+      // Path 유효성 검증을 위해 createShape 호출 (path 타입일 때만)
+      if (customShapeType === 'path') {
+        createShape({ path: customShapePath })
+      }
 
       const newPreset: CustomShapePreset = {
         name: shapePresetName,
-        path: customShapePath,
+        type: customShapeType,
+        ...(customShapeType === 'path'
+          ? { path: customShapePath }
+          : { svg: customShapeSvg, scalar: customShapeScalar }),
         // matrix는 런타임에 createShape에서 자동 계산
       }
 
       setCustomShapePresets([...customShapePresets, newPreset])
       setShapePresetName('')
       setCustomShapePath('')
+      setCustomShapeSvg('')
       alert(`"${shapePresetName}" 파티클 프리셋이 저장되었습니다!`)
     } catch (error) {
-      alert('유효하지 않은 SVG Path입니다')
+      alert('유효하지 않은 입력입니다')
       console.error('Shape add error:', error)
     }
   }
 
   // 예시 파티클 불러오기
   const loadExampleShape = (preset: CustomShapePreset) => {
-    setCustomShapePath(preset.path)
+    setCustomShapeType(preset.type)
+    if (preset.type === 'path') {
+      setCustomShapePath(preset.path || '')
+      setCustomShapeSvg('')
+    } else {
+      setCustomShapeSvg(preset.svg || '')
+      setCustomShapePath('')
+      setCustomShapeScalar(preset.scalar || 1)
+    }
     setShapePresetName(preset.name)
   }
 
@@ -645,7 +703,15 @@ export function PreviewPage() {
   // 커스텀 파티클 프리셋 수정 시작
   const startEditingShapePreset = (index: number) => {
     const preset = customShapePresets[index]
-    setCustomShapePath(preset.path)
+    setCustomShapeType(preset.type)
+    if (preset.type === 'path') {
+      setCustomShapePath(preset.path || '')
+      setCustomShapeSvg('')
+    } else {
+      setCustomShapeSvg(preset.svg || '')
+      setCustomShapePath('')
+      setCustomShapeScalar(preset.scalar || 1)
+    }
     setShapePresetName(preset.name)
     setEditingShapePresetIndex(index)
   }
@@ -659,20 +725,29 @@ export function PreviewPage() {
       return
     }
 
-    if (!customShapePath.trim()) {
+    if (customShapeType === 'path' && !customShapePath.trim()) {
       alert('SVG Path를 입력해주세요')
+      return
+    }
+
+    if (customShapeType === 'svg' && !customShapeSvg.trim()) {
+      alert('SVG 마크업을 입력해주세요')
       return
     }
 
     const updatedPresets = [...customShapePresets]
     updatedPresets[editingShapePresetIndex] = {
       name: shapePresetName,
-      path: customShapePath,
+      type: customShapeType,
+      ...(customShapeType === 'path'
+        ? { path: customShapePath }
+        : { svg: customShapeSvg, scalar: customShapeScalar }),
     }
 
     setCustomShapePresets(updatedPresets)
     setShapePresetName('')
     setCustomShapePath('')
+    setCustomShapeSvg('')
     setEditingShapePresetIndex(null)
     alert('파티클 프리셋이 업데이트되었습니다!')
   }
@@ -682,6 +757,7 @@ export function PreviewPage() {
     setEditingShapePresetIndex(null)
     setShapePresetName('')
     setCustomShapePath('')
+    setCustomShapeSvg('')
   }
 
   // 코드에서 프리셋 가져오기
@@ -1015,12 +1091,18 @@ export function PreviewPage() {
               onCancelEditingColorPreset={cancelEditingColorPreset}
               useCustomShapes={useCustomShapes}
               customShapePath={customShapePath}
+              customShapeSvg={customShapeSvg}
+              customShapeType={customShapeType}
+              customShapeScalar={customShapeScalar}
               customShapePresets={customShapePresets}
               selectedCustomShapes={selectedCustomShapes}
               shapePresetName={shapePresetName}
               editingShapePresetIndex={editingShapePresetIndex}
               onUseCustomShapesChange={setUseCustomShapes}
               onCustomShapePathChange={setCustomShapePath}
+              onCustomShapeSvgChange={setCustomShapeSvg}
+              onCustomShapeTypeChange={setCustomShapeType}
+              onCustomShapeScalarChange={setCustomShapeScalar}
               onShapePresetNameChange={setShapePresetName}
               onAddCustomShapePreset={addCustomShapePreset}
               onLoadExampleShape={loadExampleShape}

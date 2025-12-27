@@ -72,8 +72,18 @@ function formatSingleOption(
 
   // shapes를 코드로 표시해야 하는 경우
   if (isCustomEffect) {
-    // 마지막 줄의 } 제거
+    // 마지막 줄의 } 제거하고, 그 전 줄에 쉼표 추가 (shapes 속성을 위해)
     const restLines = restJson.slice(0, -1)
+
+    // 마지막 속성 뒤에 쉼표가 없다면 추가
+    if (restLines.length > 0) {
+      const lastLineIndex = restLines.length - 1
+      const lastLine = restLines[lastLineIndex]
+      if (!lastLine.trim().endsWith(',')) {
+        restLines[lastLineIndex] = lastLine + ','
+      }
+    }
+
     lines.push(...restLines)
 
     // shapes 추가

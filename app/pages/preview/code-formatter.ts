@@ -67,7 +67,7 @@ function formatSingleOption(
   // shapes를 코드로 표시해야 하는 경우 (커스텀 shape)
   if (isCustomEffect) {
     // shapes를 제외한 나머지 옵션들을 JSON으로 변환
-    const { shapes: _shapes, ...restWithoutShapes } = rest
+    const { shapes: originalShapes, ...restWithoutShapes } = rest
     const restJson = JSON.stringify(restWithoutShapes, null, 2)
       .split('\n')
       .map((line) => indentStr + line)
@@ -89,14 +89,30 @@ function formatSingleOption(
     // shapes 추가
     lines.push(`${indentStr}  "shapes": [`)
 
-    // 커스텀 shape 코드 생성
-    if (customShapesToUse.length > 0) {
-      customShapesToUse.forEach((shapeMeta: CustomShapePreset, index: number) => {
-        const shapeCode = formatShapeMetaAsCode(shapeMeta, indent + 4)
-        const comma = index < customShapesToUse.length - 1 ? ',' : ''
-        lines.push(`${shapeCode}${comma}`)
+    const allShapesCode: string[] = []
+
+    // 기본 파티클 추가 (문자열 shapes)
+    if (originalShapes && Array.isArray(originalShapes)) {
+      originalShapes.forEach((shape: any) => {
+        if (typeof shape === 'string') {
+          allShapesCode.push(`${indentStr}    "${shape}"`)
+        }
       })
     }
+
+    // 커스텀 shape 코드 생성
+    if (customShapesToUse.length > 0) {
+      customShapesToUse.forEach((shapeMeta: CustomShapePreset) => {
+        const shapeCode = formatShapeMetaAsCode(shapeMeta, indent + 4)
+        allShapesCode.push(shapeCode)
+      })
+    }
+
+    // 쉼표 추가하여 출력
+    allShapesCode.forEach((shapeCode, index) => {
+      const comma = index < allShapesCode.length - 1 ? ',' : ''
+      lines.push(`${shapeCode}${comma}`)
+    })
 
     lines.push(`${indentStr}  ]`)
     lines.push(`${indentStr}}`)

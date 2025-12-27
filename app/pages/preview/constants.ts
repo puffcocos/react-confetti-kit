@@ -22,6 +22,10 @@ export const DEFAULT_VALUES = {
   wobbleRangeMax: 10,
   wobbleSpeedMin: 0.05,
   wobbleSpeedMax: 0.11,
+  rotation: 0,
+  rotationSpeedMin: 0,
+  rotationSpeedMax: 0,
+  randomRotationDirection: false,
 } as const
 
 /**
@@ -156,6 +160,31 @@ export const OPTION_INFO = {
     min: 0,
     max: 0.5,
     step: 0.01,
+  },
+  rotation: {
+    label: '초기 회전 각도',
+    description: '파티클의 초기 회전 각도 (도)',
+    min: 0,
+    max: 360,
+  },
+  rotationSpeedMin: {
+    label: '회전 속도 최소값',
+    description: '파티클이 회전하는 최소 속도 (도/프레임)',
+    min: -20,
+    max: 20,
+    step: 0.1,
+  },
+  rotationSpeedMax: {
+    label: '회전 속도 최대값',
+    description: '파티클이 회전하는 최대 속도 (도/프레임)',
+    min: -20,
+    max: 20,
+    step: 0.1,
+  },
+  randomRotationDirection: {
+    label: '회전 방향 랜덤',
+    description: '각 파티클의 회전 방향을 무작위로 설정',
+    type: 'boolean',
   },
 } as const
 

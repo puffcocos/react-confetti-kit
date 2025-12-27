@@ -32,6 +32,11 @@ export interface ConfettiOptions extends BaseConfettiOptions {
   tiltSpeed?: [number, number]
   wobbleRange?: [number, number]
   wobbleSpeed?: [number, number]
+  randomRotationDirection?: boolean
+
+  // 평면 회전 (z축 회전)
+  rotation?: number // 초기 회전 각도 (degrees)
+  rotationSpeed?: [number, number] // 회전 속도 범위 (degrees per frame)
 
   // 내부 메타데이터 (UI 동기화 및 코드 생성용)
   _useCustomShapes?: boolean

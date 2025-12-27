@@ -53,6 +53,21 @@ export function PreviewPage() {
   const [wobbleSpeedMin, setWobbleSpeedMin] = useState<number>(DEFAULT_VALUES.wobbleSpeedMin)
   const [wobbleSpeedMax, setWobbleSpeedMax] = useState<number>(DEFAULT_VALUES.wobbleSpeedMax)
 
+  // 회전 옵션
+  const [rotation, setRotation] = useLocalStorage<number>('rotation', DEFAULT_VALUES.rotation)
+  const [rotationSpeedMin, setRotationSpeedMin] = useLocalStorage<number>(
+    'rotationSpeedMin',
+    DEFAULT_VALUES.rotationSpeedMin
+  )
+  const [rotationSpeedMax, setRotationSpeedMax] = useLocalStorage<number>(
+    'rotationSpeedMax',
+    DEFAULT_VALUES.rotationSpeedMax
+  )
+  const [randomRotationDirection, setRandomRotationDirection] = useLocalStorage<boolean>(
+    'randomRotationDirection',
+    DEFAULT_VALUES.randomRotationDirection
+  )
+
   // 색상 옵션
   const [useCustomColors, setUseCustomColors] = useState(false)
   const [customColors, setCustomColors] = useState<string[]>([])
@@ -102,8 +117,9 @@ export function PreviewPage() {
   const [shapePresetName, setShapePresetName] = useState('')
   const [editingShapePresetIndex, setEditingShapePresetIndex] = useState<number | null>(null)
 
-  // 실험적 기능 사용 여부
-  const [useExperimentalFeatures, setUseExperimentalFeatures] = useState(false)
+  // 실험적 기능 사용 여부 (분리된 토글)
+  const [useTiltWobble, setUseTiltWobble] = useState(false)
+  const [useRotation, setUseRotation] = useState(false)
 
   // Canvas 미리보기 토글 상태
   const [isCanvasPreviewOpen, setIsCanvasPreviewOpen] = useState(false)
@@ -158,14 +174,22 @@ export function PreviewPage() {
     scalar,
     drift,
     flat,
-    // 실험적 기능이 활성화되어 있을 때만 포함
-    ...(useExperimentalFeatures
+    // 실험적 기능: 기울기 및 흔들림 (활성화 시에만 포함)
+    ...(useTiltWobble
       ? {
           // tiltRange: degrees to radians
           tiltRange: [(tiltRangeMin * Math.PI) / 180, (tiltRangeMax * Math.PI) / 180],
           tiltSpeed: [tiltSpeedMin, tiltSpeedMax],
           wobbleRange: [wobbleRangeMin, wobbleRangeMax],
           wobbleSpeed: [wobbleSpeedMin, wobbleSpeedMax],
+        }
+      : {}),
+    // 실험적 기능: 평면 회전 (활성화 시에만 포함)
+    ...(useRotation
+      ? {
+          rotation,
+          rotationSpeed: [rotationSpeedMin, rotationSpeedMax],
+          randomRotationDirection,
         }
       : {}),
     ...(useCustomColors && customColors.length > 0 ? { colors: customColors } : {}),
@@ -238,13 +262,18 @@ export function PreviewPage() {
     setWobbleRangeMax(DEFAULT_VALUES.wobbleRangeMax)
     setWobbleSpeedMin(DEFAULT_VALUES.wobbleSpeedMin)
     setWobbleSpeedMax(DEFAULT_VALUES.wobbleSpeedMax)
+    setRotation(DEFAULT_VALUES.rotation)
+    setRotationSpeedMin(DEFAULT_VALUES.rotationSpeedMin)
+    setRotationSpeedMax(DEFAULT_VALUES.rotationSpeedMax)
+    setRandomRotationDirection(DEFAULT_VALUES.randomRotationDirection)
     setUseCustomColors(false)
     setCustomColors(['#ff0000', '#00ff00', '#0000ff'])
     setShapes(['square', 'circle'])
     setUseCustomShapes(false)
     setCustomShapePath('')
     setSelectedCustomShapes([])
-    setUseExperimentalFeatures(false)
+    setUseTiltWobble(false)
+    setUseRotation(false)
   }
 
   // 기본 프리셋 선택 및 즉시 실행
@@ -594,6 +623,10 @@ export function PreviewPage() {
     setScalar(effect.scalar ?? DEFAULT_VALUES.scalar)
     setDrift(effect.drift ?? DEFAULT_VALUES.drift)
     setFlat(effect.flat ?? DEFAULT_VALUES.flat)
+    setRotation(effect.rotation ?? DEFAULT_VALUES.rotation)
+    setRotationSpeedMin(effect.rotationSpeed?.[0] ?? DEFAULT_VALUES.rotationSpeedMin)
+    setRotationSpeedMax(effect.rotationSpeed?.[1] ?? DEFAULT_VALUES.rotationSpeedMax)
+    setRandomRotationDirection(effect.randomRotationDirection ?? DEFAULT_VALUES.randomRotationDirection)
 
     // tiltRange: radians to degrees
     const tiltRangeMinRadians = effect.tiltRange?.[0] ?? (DEFAULT_VALUES.tiltRangeMin * Math.PI) / 180
@@ -608,14 +641,22 @@ export function PreviewPage() {
     setWobbleSpeedMin(effect.wobbleSpeed?.[0] ?? DEFAULT_VALUES.wobbleSpeedMin)
     setWobbleSpeedMax(effect.wobbleSpeed?.[1] ?? DEFAULT_VALUES.wobbleSpeedMax)
 
+    setRotation(effect.rotation ?? DEFAULT_VALUES.rotation)
+    setRotationSpeedMin(effect.rotationSpeed?.[0] ?? DEFAULT_VALUES.rotationSpeedMin)
+    setRotationSpeedMax(effect.rotationSpeed?.[1] ?? DEFAULT_VALUES.rotationSpeedMax)
+    setRandomRotationDirection(effect.randomRotationDirection ?? DEFAULT_VALUES.randomRotationDirection)
+
     // 실험적 옵션 사용 여부 자동 감지
-    const hasExperimentalOptions =
+    const hasTiltWobble =
       effect.tiltRange !== undefined ||
       effect.tiltSpeed !== undefined ||
       effect.wobbleRange !== undefined ||
       effect.wobbleSpeed !== undefined
 
-    setUseExperimentalFeatures(hasExperimentalOptions)
+    const hasRotation = effect.rotation !== undefined || effect.rotationSpeed !== undefined || effect.randomRotationDirection !== undefined
+
+    setUseTiltWobble(hasTiltWobble)
+    setUseRotation(hasRotation)
 
     if (effect.colors && effect.colors.length > 0) {
       setCustomColors(effect.colors)
@@ -1172,7 +1213,8 @@ export function PreviewPage() {
               editingColorPresetIndex={editingColorPresetIndex}
               activeColorPreset={activeColorPreset}
               useCustomCanvas={useCustomCanvas}
-              useExperimentalFeatures={useExperimentalFeatures}
+              useTiltWobble={useTiltWobble}
+              useRotation={useRotation}
               onParticleCountChange={setParticleCount}
               onSpreadChange={setSpread}
               onStartVelocityChange={setStartVelocity}
@@ -1231,7 +1273,16 @@ export function PreviewPage() {
               onStartEditingShapePreset={startEditingShapePreset}
               onUpdateCustomShapePreset={updateCustomShapePreset}
               onCancelEditingShapePreset={cancelEditingShapePreset}
-              onUseExperimentalFeaturesChange={setUseExperimentalFeatures}
+              onUseTiltWobbleChange={setUseTiltWobble}
+              onUseRotationChange={setUseRotation}
+              rotation={rotation}
+              rotationSpeedMin={rotationSpeedMin}
+              rotationSpeedMax={rotationSpeedMax}
+              onRotationChange={setRotation}
+              onRotationSpeedMinChange={setRotationSpeedMin}
+              onRotationSpeedMaxChange={setRotationSpeedMax}
+              randomRotationDirection={randomRotationDirection}
+              onRandomRotationDirectionChange={setRandomRotationDirection}
             />
           </div>
         </div>

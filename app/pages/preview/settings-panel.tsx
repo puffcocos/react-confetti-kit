@@ -29,6 +29,10 @@ interface SettingsPanelProps {
   wobbleRangeMax: number
   wobbleSpeedMin: number
   wobbleSpeedMax: number
+  rotation: number
+  rotationSpeedMin: number
+  rotationSpeedMax: number
+  randomRotationDirection: boolean
   useCustomColors: boolean
   customColors: string[]
   colorInput: string
@@ -64,9 +68,11 @@ interface SettingsPanelProps {
   // Canvas 바운더리 상태
   useCustomCanvas: boolean
 
-  // 실험적 기능 사용 여부
-  useExperimentalFeatures: boolean
-  onUseExperimentalFeaturesChange: (value: boolean) => void
+  // 실험적 기능 사용 여부 (분리된 토글)
+  useTiltWobble: boolean
+  useRotation: boolean
+  onUseTiltWobbleChange: (value: boolean) => void
+  onUseRotationChange: (value: boolean) => void
 
   // 상태 업데이트 함수
   onParticleCountChange: (value: number) => void
@@ -89,6 +95,10 @@ interface SettingsPanelProps {
   onWobbleRangeMaxChange: (value: number) => void
   onWobbleSpeedMinChange: (value: number) => void
   onWobbleSpeedMaxChange: (value: number) => void
+  onRotationChange: (value: number) => void
+  onRotationSpeedMinChange: (value: number) => void
+  onRotationSpeedMaxChange: (value: number) => void
+  onRandomRotationDirectionChange: (value: boolean) => void
   onUseCustomColorsChange: (value: boolean) => void
   onCustomColorsChange: (colors: string[]) => void
   onColorInputChange: (value: string) => void
@@ -129,7 +139,7 @@ interface SettingsPanelProps {
  */
 export function SettingsPanel(props: SettingsPanelProps) {
   const [isCodePreviewExpanded, setIsCodePreviewExpanded] = useState(false)
-  const [activeTab, setActiveTab] = useState<'design' | 'movement' | 'position' | 'lab'>('design')
+  const [activeTab, setActiveTab] = useState<'design' | 'movement' | 'position'>('design')
 
   const {
     particleCount,
@@ -152,6 +162,10 @@ export function SettingsPanel(props: SettingsPanelProps) {
     wobbleRangeMax,
     wobbleSpeedMin,
     wobbleSpeedMax,
+    rotation,
+    rotationSpeedMin,
+    rotationSpeedMax,
+    randomRotationDirection,
     useCustomColors,
     customColors,
     colorInput,
@@ -176,7 +190,8 @@ export function SettingsPanel(props: SettingsPanelProps) {
     shapePresetName,
     editingShapePresetIndex,
     useCustomCanvas,
-    useExperimentalFeatures,
+    useTiltWobble,
+    useRotation,
     onParticleCountChange,
     onSpreadChange,
     onStartVelocityChange,
@@ -197,6 +212,10 @@ export function SettingsPanel(props: SettingsPanelProps) {
     onWobbleRangeMaxChange,
     onWobbleSpeedMinChange,
     onWobbleSpeedMaxChange,
+    onRotationChange,
+    onRotationSpeedMinChange,
+    onRotationSpeedMaxChange,
+    onRandomRotationDirectionChange,
     onUseCustomColorsChange,
     onCustomColorsChange,
     onColorInputChange,
@@ -226,7 +245,8 @@ export function SettingsPanel(props: SettingsPanelProps) {
     onStartEditingShapePreset,
     onUpdateCustomShapePreset,
     onCancelEditingShapePreset,
-    onUseExperimentalFeaturesChange,
+    onUseTiltWobbleChange,
+    onUseRotationChange,
   } = props
 
   const addColor = () => {
@@ -292,7 +312,6 @@ export function SettingsPanel(props: SettingsPanelProps) {
           { id: 'design', label: '🎨 디자인', color: 'purple' },
           { id: 'movement', label: '🏃 움직임', color: 'blue' },
           { id: 'position', label: '📍 위치', color: 'green' },
-          { id: 'lab', label: '🧪 실험실', color: 'amber' },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -1008,6 +1027,252 @@ export function SettingsPanel(props: SettingsPanelProps) {
                 </button>
               </div>
             </div>
+
+            {/* 실험적 기능 */}
+            <div className="col-span-2 mt-6">
+              {/* 실험적 기능 1: 3D 기울기 및 흔들림 */}
+              <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">🧪</span>
+                    <h3 className="text-sm font-semibold text-amber-800">3D 기울기 및 흔들림</h3>
+                    <span className="text-xs bg-amber-200 text-amber-800 px-2 py-0.5 rounded-full font-medium">
+                      EXPERIMENTAL
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => onUseTiltWobbleChange(!useTiltWobble)}
+                    className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                      useTiltWobble
+                        ? 'bg-amber-600 text-white hover:bg-amber-700'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                  >
+                    {useTiltWobble ? 'ON' : 'OFF'}
+                  </button>
+                </div>
+
+                {!useTiltWobble && (
+                  <div className="text-xs text-amber-700 space-y-2 py-2">
+                    <p className="font-medium">💡 활성화하면 다음 실험적 기능들을 사용할 수 있습니다:</p>
+                    <ul className="list-disc list-inside space-y-1 pl-2">
+                      <li><strong>3D 기울기 (Tilt)</strong>: 파티클이 3D 공간에서 회전하는 효과</li>
+                      <li><strong>흔들림 (Wobble)</strong>: 파티클이 좌우로 흔들리는 효과</li>
+                    </ul>
+                  </div>
+                )}
+
+                {useTiltWobble && (
+                  <>
+                    <p className="text-xs text-amber-700 mb-4">
+                      파티클이 3D 공간에서 기울어지고 흔들리는 효과입니다. 일부 브라우저에서 예상과 다르게 동작할 수 있습니다.
+                    </p>
+
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-4">
+                        {/* Tilt Range Min */}
+                        <OptionSlider
+                          label={OPTION_INFO.tiltRangeMin.label}
+                          value={tiltRangeMin}
+                          defaultValue={DEFAULT_VALUES.tiltRangeMin}
+                          description={OPTION_INFO.tiltRangeMin.description}
+                          min={OPTION_INFO.tiltRangeMin.min}
+                          max={OPTION_INFO.tiltRangeMin.max}
+                          onChange={onTiltRangeMinChange}
+                          unit="°"
+                        />
+
+                        {/* Tilt Range Max */}
+                        <OptionSlider
+                          label={OPTION_INFO.tiltRangeMax.label}
+                          value={tiltRangeMax}
+                          defaultValue={DEFAULT_VALUES.tiltRangeMax}
+                          description={OPTION_INFO.tiltRangeMax.description}
+                          min={OPTION_INFO.tiltRangeMax.min}
+                          max={OPTION_INFO.tiltRangeMax.max}
+                          onChange={onTiltRangeMaxChange}
+                          unit="°"
+                        />
+
+                        {/* Tilt Speed Min */}
+                        <OptionSlider
+                          label={OPTION_INFO.tiltSpeedMin.label}
+                          value={tiltSpeedMin}
+                          defaultValue={DEFAULT_VALUES.tiltSpeedMin}
+                          description={OPTION_INFO.tiltSpeedMin.description}
+                          min={OPTION_INFO.tiltSpeedMin.min}
+                          max={OPTION_INFO.tiltSpeedMin.max}
+                          step={OPTION_INFO.tiltSpeedMin.step}
+                          onChange={onTiltSpeedMinChange}
+                          decimal={2}
+                        />
+
+                        {/* Tilt Speed Max */}
+                        <OptionSlider
+                          label={OPTION_INFO.tiltSpeedMax.label}
+                          value={tiltSpeedMax}
+                          defaultValue={DEFAULT_VALUES.tiltSpeedMax}
+                          description={OPTION_INFO.tiltSpeedMax.description}
+                          min={OPTION_INFO.tiltSpeedMax.min}
+                          max={OPTION_INFO.tiltSpeedMax.max}
+                          step={OPTION_INFO.tiltSpeedMax.step}
+                          onChange={onTiltSpeedMaxChange}
+                          decimal={2}
+                        />
+
+                        {/* Wobble Range Min */}
+                        <OptionSlider
+                          label={OPTION_INFO.wobbleRangeMin.label}
+                          value={wobbleRangeMin}
+                          defaultValue={DEFAULT_VALUES.wobbleRangeMin}
+                          description={OPTION_INFO.wobbleRangeMin.description}
+                          min={OPTION_INFO.wobbleRangeMin.min}
+                          max={OPTION_INFO.wobbleRangeMin.max}
+                          onChange={onWobbleRangeMinChange}
+                        />
+
+                        {/* Wobble Range Max */}
+                        <OptionSlider
+                          label={OPTION_INFO.wobbleRangeMax.label}
+                          value={wobbleRangeMax}
+                          defaultValue={DEFAULT_VALUES.wobbleRangeMax}
+                          description={OPTION_INFO.wobbleRangeMax.description}
+                          min={OPTION_INFO.wobbleRangeMax.min}
+                          max={OPTION_INFO.wobbleRangeMax.max}
+                          onChange={onWobbleRangeMaxChange}
+                        />
+
+                        {/* Wobble Speed Min */}
+                        <OptionSlider
+                          label={OPTION_INFO.wobbleSpeedMin.label}
+                          value={wobbleSpeedMin}
+                          defaultValue={DEFAULT_VALUES.wobbleSpeedMin}
+                          description={OPTION_INFO.wobbleSpeedMin.description}
+                          min={OPTION_INFO.wobbleSpeedMin.min}
+                          max={OPTION_INFO.wobbleSpeedMin.max}
+                          step={OPTION_INFO.wobbleSpeedMin.step}
+                          onChange={onWobbleSpeedMinChange}
+                          decimal={2}
+                        />
+
+                        {/* Wobble Speed Max */}
+                        <OptionSlider
+                          label={OPTION_INFO.wobbleSpeedMax.label}
+                          value={wobbleSpeedMax}
+                          defaultValue={DEFAULT_VALUES.wobbleSpeedMax}
+                          description={OPTION_INFO.wobbleSpeedMax.description}
+                          min={OPTION_INFO.wobbleSpeedMax.min}
+                          max={OPTION_INFO.wobbleSpeedMax.max}
+                          step={OPTION_INFO.wobbleSpeedMax.step}
+                          onChange={onWobbleSpeedMaxChange}
+                          decimal={2}
+                        />
+                      </div>
+                  </>
+                )}
+              </div>
+
+              {/* 실험적 기능 2: 평면 회전 (Z축) */}
+              <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg mt-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">🧪</span>
+                    <h3 className="text-sm font-semibold text-amber-800">평면 회전 (Z축)</h3>
+                    <span className="text-xs bg-amber-200 text-amber-800 px-2 py-0.5 rounded-full font-medium">
+                      EXPERIMENTAL
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => onUseRotationChange(!useRotation)}
+                    className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                      useRotation
+                        ? 'bg-amber-600 text-white hover:bg-amber-700'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                  >
+                    {useRotation ? 'ON' : 'OFF'}
+                  </button>
+                </div>
+
+                {!useRotation && (
+                  <div className="text-xs text-amber-700 space-y-2 py-2">
+                    <p className="font-medium">💡 활성화하면 다음 실험적 기능을 사용할 수 있습니다:</p>
+                    <ul className="list-disc list-inside space-y-1 pl-2">
+                      <li><strong>평면 회전 (Z축)</strong>: 파티클이 평면 상에서 회전하는 효과</li>
+                    </ul>
+                  </div>
+                )}
+
+                {useRotation && (
+                  <>
+                    <p className="text-xs text-amber-700 mb-4">
+                      파티클이 평면에서 회전하는 효과입니다. SVG를 포함한 모든 파티클 형태에 적용됩니다.
+                    </p>
+
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-4">
+                        {/* Rotation */}
+                        <OptionSlider
+                          label={OPTION_INFO.rotation.label}
+                          value={rotation}
+                          defaultValue={DEFAULT_VALUES.rotation}
+                          description={OPTION_INFO.rotation.description}
+                          min={OPTION_INFO.rotation.min}
+                          max={OPTION_INFO.rotation.max}
+                          onChange={onRotationChange}
+                          unit="°"
+                        />
+
+                        {/* Rotation Direction Random Toggle */}
+                        <div className="flex flex-col justify-center gap-1.5 p-1">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-semibold text-gray-700">방향 랜덤</span>
+                            <button
+                              onClick={() =>
+                                onRandomRotationDirectionChange(!randomRotationDirection)
+                              }
+                              className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                                randomRotationDirection
+                                  ? 'bg-amber-600 text-white hover:bg-amber-700'
+                                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                              }`}
+                            >
+                              {randomRotationDirection ? 'ON' : 'OFF'}
+                            </button>
+                          </div>
+                          <p className="text-[10px] text-gray-400">
+                            활성화 시 각 파티클이 시계/반시계 방향으로 무작위 회전합니다.
+                          </p>
+                        </div>
+
+                        {/* Rotation Speed Min */}
+                        <OptionSlider
+                          label={OPTION_INFO.rotationSpeedMin.label}
+                          value={rotationSpeedMin}
+                          defaultValue={DEFAULT_VALUES.rotationSpeedMin}
+                          description={OPTION_INFO.rotationSpeedMin.description}
+                          min={OPTION_INFO.rotationSpeedMin.min}
+                          max={OPTION_INFO.rotationSpeedMin.max}
+                          step={OPTION_INFO.rotationSpeedMin.step}
+                          onChange={onRotationSpeedMinChange}
+                          decimal={1}
+                        />
+
+                        {/* Rotation Speed Max */}
+                        <OptionSlider
+                          label={OPTION_INFO.rotationSpeedMax.label}
+                          value={rotationSpeedMax}
+                          defaultValue={DEFAULT_VALUES.rotationSpeedMax}
+                          description={OPTION_INFO.rotationSpeedMax.description}
+                          min={OPTION_INFO.rotationSpeedMax.min}
+                          max={OPTION_INFO.rotationSpeedMax.max}
+                          step={OPTION_INFO.rotationSpeedMax.step}
+                          onChange={onRotationSpeedMaxChange}
+                          decimal={1}
+                        />
+                      </div>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
         )}
 
@@ -1056,140 +1321,6 @@ export function SettingsPanel(props: SettingsPanelProps) {
           </div>
         )}
 
-        {/* 실험실 탭: 실험적 기능 */}
-        {activeTab === 'lab' && (
-          <div className="space-y-6">
-            <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">🧪</span>
-                  <h3 className="text-sm font-semibold text-amber-800">실험적 기능</h3>
-                  <span className="text-xs bg-amber-200 text-amber-800 px-2 py-0.5 rounded-full font-medium">
-                    EXPERIMENTAL
-                  </span>
-                </div>
-                <button
-                  onClick={() => onUseExperimentalFeaturesChange(!useExperimentalFeatures)}
-                  className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                    useExperimentalFeatures
-                      ? 'bg-amber-600 text-white hover:bg-amber-700'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-                >
-                  {useExperimentalFeatures ? 'ON' : 'OFF'}
-                </button>
-              </div>
-
-              {useExperimentalFeatures && (
-                <>
-                  <p className="text-xs text-amber-700 mb-4">
-                    다음 옵션들은 실험적 기능입니다. 일부 브라우저에서 예상과 다르게 동작할 수 있습니다.
-                  </p>
-
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-4">
-                    {/* Tilt Range Min */}
-                    <OptionSlider
-                      label={OPTION_INFO.tiltRangeMin.label}
-                      value={tiltRangeMin}
-                      defaultValue={DEFAULT_VALUES.tiltRangeMin}
-                      description={OPTION_INFO.tiltRangeMin.description}
-                      min={OPTION_INFO.tiltRangeMin.min}
-                      max={OPTION_INFO.tiltRangeMin.max}
-                      onChange={onTiltRangeMinChange}
-                      unit="°"
-                    />
-
-                    {/* Tilt Range Max */}
-                    <OptionSlider
-                      label={OPTION_INFO.tiltRangeMax.label}
-                      value={tiltRangeMax}
-                      defaultValue={DEFAULT_VALUES.tiltRangeMax}
-                      description={OPTION_INFO.tiltRangeMax.description}
-                      min={OPTION_INFO.tiltRangeMax.min}
-                      max={OPTION_INFO.tiltRangeMax.max}
-                      onChange={onTiltRangeMaxChange}
-                      unit="°"
-                    />
-
-                    {/* Tilt Speed Min */}
-                    <OptionSlider
-                      label={OPTION_INFO.tiltSpeedMin.label}
-                      value={tiltSpeedMin}
-                      defaultValue={DEFAULT_VALUES.tiltSpeedMin}
-                      description={OPTION_INFO.tiltSpeedMin.description}
-                      min={OPTION_INFO.tiltSpeedMin.min}
-                      max={OPTION_INFO.tiltSpeedMin.max}
-                      step={OPTION_INFO.tiltSpeedMin.step}
-                      onChange={onTiltSpeedMinChange}
-                      decimal={2}
-                    />
-
-                    {/* Tilt Speed Max */}
-                    <OptionSlider
-                      label={OPTION_INFO.tiltSpeedMax.label}
-                      value={tiltSpeedMax}
-                      defaultValue={DEFAULT_VALUES.tiltSpeedMax}
-                      description={OPTION_INFO.tiltSpeedMax.description}
-                      min={OPTION_INFO.tiltSpeedMax.min}
-                      max={OPTION_INFO.tiltSpeedMax.max}
-                      step={OPTION_INFO.tiltSpeedMax.step}
-                      onChange={onTiltSpeedMaxChange}
-                      decimal={2}
-                    />
-
-                    {/* Wobble Range Min */}
-                    <OptionSlider
-                      label={OPTION_INFO.wobbleRangeMin.label}
-                      value={wobbleRangeMin}
-                      defaultValue={DEFAULT_VALUES.wobbleRangeMin}
-                      description={OPTION_INFO.wobbleRangeMin.description}
-                      min={OPTION_INFO.wobbleRangeMin.min}
-                      max={OPTION_INFO.wobbleRangeMin.max}
-                      onChange={onWobbleRangeMinChange}
-                    />
-
-                    {/* Wobble Range Max */}
-                    <OptionSlider
-                      label={OPTION_INFO.wobbleRangeMax.label}
-                      value={wobbleRangeMax}
-                      defaultValue={DEFAULT_VALUES.wobbleRangeMax}
-                      description={OPTION_INFO.wobbleRangeMax.description}
-                      min={OPTION_INFO.wobbleRangeMax.min}
-                      max={OPTION_INFO.wobbleRangeMax.max}
-                      onChange={onWobbleRangeMaxChange}
-                    />
-
-                    {/* Wobble Speed Min */}
-                    <OptionSlider
-                      label={OPTION_INFO.wobbleSpeedMin.label}
-                      value={wobbleSpeedMin}
-                      defaultValue={DEFAULT_VALUES.wobbleSpeedMin}
-                      description={OPTION_INFO.wobbleSpeedMin.description}
-                      min={OPTION_INFO.wobbleSpeedMin.min}
-                      max={OPTION_INFO.wobbleSpeedMin.max}
-                      step={OPTION_INFO.wobbleSpeedMin.step}
-                      onChange={onWobbleSpeedMinChange}
-                      decimal={2}
-                    />
-
-                    {/* Wobble Speed Max */}
-                    <OptionSlider
-                      label={OPTION_INFO.wobbleSpeedMax.label}
-                      value={wobbleSpeedMax}
-                      defaultValue={DEFAULT_VALUES.wobbleSpeedMax}
-                      description={OPTION_INFO.wobbleSpeedMax.description}
-                      min={OPTION_INFO.wobbleSpeedMax.min}
-                      max={OPTION_INFO.wobbleSpeedMax.max}
-                      step={OPTION_INFO.wobbleSpeedMax.step}
-                      onChange={onWobbleSpeedMaxChange}
-                      decimal={2}
-                    />
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* 하단 액션 버튼 영역 (글로벌) */}

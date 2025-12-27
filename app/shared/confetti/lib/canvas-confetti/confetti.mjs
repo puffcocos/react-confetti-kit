@@ -366,6 +366,12 @@ var module = {}
       ovalScalar: 0.6,
       scalar: opts.scalar,
       flat: opts.flat,
+      // 평면 회전 (z축 회전)
+      rotation: opts.rotation || 0,
+      rotationSpeed: opts.rotationSpeed
+        ? (Math.random() * (opts.rotationSpeed[1] - opts.rotationSpeed[0]) + opts.rotationSpeed[0]) *
+          (opts.randomRotationDirection && Math.random() > 0.5 ? -1 : 1)
+        : 0,
     }
   }
 
@@ -373,6 +379,9 @@ var module = {}
     fetti.x += Math.cos(fetti.angle2D) * fetti.velocity + fetti.drift
     fetti.y += Math.sin(fetti.angle2D) * fetti.velocity + fetti.gravity
     fetti.velocity *= fetti.decay
+
+    // 평면 회전 업데이트 (z축 회전)
+    fetti.rotation += fetti.rotationSpeed
 
     if (fetti.flat) {
       fetti.wobble = 0
@@ -430,12 +439,12 @@ var module = {}
           fetti.y,
           Math.abs(x2 - x1) * 0.1,
           Math.abs(y2 - y1) * 0.1,
-          (Math.PI / 10) * fetti.wobble
+          (Math.PI / 10) * fetti.wobble + (fetti.rotation * Math.PI) / 180
         )
       )
     } else if (fetti.shape.type === 'svg') {
       // Direct SVG rendering - keeps vector quality
-      var rotation = (Math.PI / 10) * fetti.wobble
+      var rotation = (Math.PI / 10) * fetti.wobble + (fetti.rotation * Math.PI) / 180
       var width = fetti.shape.width * fetti.scalar
       var height = fetti.shape.height * fetti.scalar
 
@@ -475,7 +484,7 @@ var module = {}
 
       context.restore()
     } else if (fetti.shape.type === 'bitmap') {
-      var rotation = (Math.PI / 10) * fetti.wobble
+      var rotation = (Math.PI / 10) * fetti.wobble + (fetti.rotation * Math.PI) / 180
       var scaleX = Math.abs(x2 - x1) * 0.1
       var scaleY = Math.abs(y2 - y1) * 0.1
       var width = fetti.shape.bitmap.width * fetti.scalar
@@ -507,7 +516,7 @@ var module = {}
             fetti.y,
             Math.abs(x2 - x1) * fetti.ovalScalar,
             Math.abs(y2 - y1) * fetti.ovalScalar,
-            (Math.PI / 10) * fetti.wobble,
+            (Math.PI / 10) * fetti.wobble + (fetti.rotation * Math.PI) / 180,
             0,
             2 * Math.PI
           )
@@ -517,12 +526,12 @@ var module = {}
             fetti.y,
             Math.abs(x2 - x1) * fetti.ovalScalar,
             Math.abs(y2 - y1) * fetti.ovalScalar,
-            (Math.PI / 10) * fetti.wobble,
+            (Math.PI / 10) * fetti.wobble + (fetti.rotation * Math.PI) / 180,
             0,
             2 * Math.PI
           )
     } else if (fetti.shape === 'star') {
-      var rot = (Math.PI / 2) * 3
+      var rot = (Math.PI / 2) * 3 + (fetti.rotation * Math.PI) / 180
       var innerRadius = 4 * fetti.scalar
       var outerRadius = 8 * fetti.scalar
       var x = fetti.x
@@ -542,10 +551,18 @@ var module = {}
         rot += step
       }
     } else {
+      // square - apply rotation transformation
+      context.save()
+      context.translate(fetti.x, fetti.y)
+      context.rotate((fetti.rotation * Math.PI) / 180)
+      context.translate(-fetti.x, -fetti.y)
+
       context.moveTo(Math.floor(fetti.x), Math.floor(fetti.y))
       context.lineTo(Math.floor(fetti.wobbleX), Math.floor(y1))
       context.lineTo(Math.floor(x2), Math.floor(y2))
       context.lineTo(Math.floor(x1), Math.floor(fetti.wobbleY))
+
+      context.restore()
     }
 
     context.closePath()
@@ -653,6 +670,11 @@ var module = {}
       var wobbleRange = prop(options, 'wobbleRange')
       var wobbleSpeed = prop(options, 'wobbleSpeed')
 
+      // rotation control
+      var rotation = prop(options, 'rotation', Number)
+      var rotationSpeed = prop(options, 'rotationSpeed')
+      var randomRotationDirection = !!prop(options, 'randomRotationDirection')
+
       var origin = getOrigin(options)
 
       var temp = particleCount
@@ -682,6 +704,10 @@ var module = {}
             tiltSpeed: tiltSpeed,
             wobbleRange: wobbleRange,
             wobbleSpeed: wobbleSpeed,
+            // rotation control
+            rotation: rotation,
+            rotationSpeed: rotationSpeed,
+            randomRotationDirection: randomRotationDirection,
           })
         )
       }

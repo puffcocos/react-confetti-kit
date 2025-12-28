@@ -17,7 +17,7 @@
  */
 
 // 로컬 confetti import
-import type { CreateTypes } from './lib/canvas-confetti/confetti'
+import type { CreateTypes, Shape } from './lib/canvas-confetti/confetti'
 import confetti from './lib/canvas-confetti/confetti'
 
 // 로컬 canvas-confetti의 기본 타입
@@ -27,7 +27,7 @@ import type { Options as BaseConfettiOptions } from './lib/canvas-confetti/confe
 export type { Shape, CreateTypes, GlobalOptions, Origin } from './lib/canvas-confetti/confetti'
 
 // 새로운 실험적 옵션들을 포함한 확장 타입
-export interface ConfettiOptions extends BaseConfettiOptions {
+export interface ConfettiOptions extends Omit<BaseConfettiOptions, 'shapes'> {
   tiltRange?: [number, number]
   tiltSpeed?: [number, number]
   wobbleRange?: [number, number]
@@ -37,6 +37,9 @@ export interface ConfettiOptions extends BaseConfettiOptions {
   // 평면 회전 (z축 회전)
   rotation?: number // 초기 회전 각도 (degrees)
   rotationSpeed?: [number, number] // 회전 속도 범위 (degrees per frame)
+
+  // shapes 속성 재정의 - Promise<Shape>도 허용
+  shapes?: Array<Shape | Promise<Shape> | string>
 
   // 내부 메타데이터 (UI 동기화 및 코드 생성용)
   _useCustomShapes?: boolean

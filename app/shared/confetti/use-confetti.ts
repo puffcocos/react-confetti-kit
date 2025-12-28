@@ -69,7 +69,7 @@ export function useConfetti() {
     }
   }, [])
 
-  const fire = useCallback((options?: ConfettiOptions | ConfettiOptions[]) => {
+  const fire = useCallback(async (options?: ConfettiOptions | ConfettiOptions[]) => {
     // 커스텀 canvas가 설정되어 있으면 해당 canvas 사용, 아니면 기본 confetti 사용
     const confettiFn = customConfettiRef.current || confetti
 
@@ -78,11 +78,26 @@ export function useConfetti() {
       return
     }
 
+    // Promise<Shape>를 해결하는 헬퍼 함수
+    const resolveShapes = async (option: ConfettiOptions) => {
+      if (!option.shapes || !Array.isArray(option.shapes)) {
+        return option
+      }
+
+      // shapes 배열의 모든 Promise를 해결
+      const resolvedShapes = await Promise.all(option.shapes)
+      return { ...option, shapes: resolvedShapes }
+    }
+
     // 배열인 경우 모든 효과를 순차적으로 실행
     if (Array.isArray(options)) {
-      options.forEach((option) => confettiFn(option))
+      for (const option of options) {
+        const resolved = await resolveShapes(option)
+        confettiFn(resolved as any)
+      }
     } else {
-      confettiFn(options)
+      const resolved = await resolveShapes(options)
+      confettiFn(resolved as any)
     }
   }, [])
 

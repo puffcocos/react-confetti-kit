@@ -198,25 +198,7 @@ export function useConfetti() {
     // 2. resolve된 shapes로 Worker 모드 결정
     const needsWorkerless = shouldUseWorkerlessMode(resolvedOptions)
 
-    // 3. 디버그: Worker 모드 로깅
-    if (import.meta.env.DEV) {
-      const shapeTypes = resolvedOptions.map((opt) => {
-        const shapes = opt.shapes || []
-        if (shapes.length === 0) return 'built-in'
-        const types = shapes.map((s) => {
-          if (typeof s === 'string') return 'built-in'
-          if (typeof s === 'object' && s !== null && 'type' in s) {
-            return (s as any).type
-          }
-          return 'unknown'
-        })
-        return types.join('+')
-      })
-      console.log('[useConfetti] Worker mode:', needsWorkerless ? '❌ Disabled (workerless)' : '✅ Enabled')
-      console.log('[useConfetti] Effects:', resolvedOptions.length, 'Shapes:', shapeTypes)
-    }
-
-    // 4. Worker 모드에 따라 적절한 인스턴스 선택
+    // 3. Worker 모드에 따라 적절한 인스턴스 선택
     const confettiFn = needsWorkerless
       ? customConfettiWorkerlessRef.current || workerlessConfettiRef.current!
       : customConfettiRef.current || confetti

@@ -355,123 +355,87 @@ export function PreviewPage() {
         }
       }
     } else if (activeCustomPreset !== null) {
-      // 커스텀 프리셋 실행 - SVG shape Promise resolve
+      // 커스텀 프리셋 실행 - fire 함수가 자동으로 Promise를 resolve
       const preset = customPresets[activeCustomPreset]
-      resolveShapePromises(preset.options).then((resolvedOptions) => {
-        fire(resolvedOptions)
-      })
+      fire(preset.options)
     } else {
       // 프리셋이 선택되지 않은 경우 우측 커스텀 효과 실행
       fire(currentOptions)
     }
   }
 
-  // shape Promise를 resolve하는 헬퍼 함수
-  const resolveShapePromises = async (options: ConfettiOptions[]): Promise<ConfettiOptions[]> => {
-    return await Promise.all(
-      options.map(async (option) => {
-        if (!option.shapes || !Array.isArray(option.shapes)) {
-          return option
-        }
-
-        // SVG shape가 있는지 확인
-        const hasSvgShape = option.shapes.some(
-          (shape) => shape && typeof shape === 'object' && 'then' in shape
-        )
-
-        if (!hasSvgShape) {
-          return option
-        }
-
-        // SVG shape Promise를 resolve하고 flat: true 추가
-        const resolvedShapes = await Promise.all(
-          option.shapes.map((shape) => {
-            if (shape && typeof shape === 'object' && 'then' in shape) {
-              return shape
-            }
-            return Promise.resolve(shape)
-          })
-        )
-
-        return {
-          ...option,
-          shapes: resolvedShapes,
-          flat: true, // SVG shape에는 회전/기울어짐 제거
-        }
-      })
-    )
-  }
 
   // 커스텀 프리셋만 실행 (커스텀 프리셋 섹션의 fire! 버튼용)
-  const fireCustomPreset = async () => {
+  const fireCustomPreset = () => {
     if (activeCustomPreset !== null) {
       const preset = customPresets[activeCustomPreset]
 
-      // shapeMeta가 있으면 shapes를 재생성
-      let optionsWithShapes: ConfettiOptions[] = preset.options
-      if (preset.shapeMeta && preset.shapeMeta.length > 0) {
-        optionsWithShapes = preset.options.map((option) => {
-          const allShapes: any[] = []
+      // 각 효과의 _selectedCustomShapes를 사용하여 shape 생성
+      // fire 함수가 자동으로 Promise를 resolve하므로 직접 전달
+      const optionsWithShapes = preset.options.map((option) => {
+        // 이 효과의 scalar 값
+        const optionScalar = option.scalar || 1
 
-          // 기존 옵션의 기본 파티클 보존 (문자열 shapes)
-          if (option.shapes && Array.isArray(option.shapes)) {
-            option.shapes.forEach((shape: any) => {
-              if (typeof shape === 'string') {
-                allShapes.push(shape)
-              }
-            })
-          }
-
-          // shapeMeta의 커스텀 파티클 추가
-          const customShapes = preset.shapeMeta!.map((shapeMeta) => {
-            if (shapeMeta.type === 'svg') {
-              return createShape({ svg: shapeMeta.svg!, scalar: shapeMeta.scalar })
+        // 기존 옵션의 기본 파티클 보존 (문자열 shapes)
+        const baseShapes: any[] = []
+        if (option.shapes && Array.isArray(option.shapes)) {
+          option.shapes.forEach((shape: any) => {
+            // 문자열 shape (기본 파티클)만 보존
+            if (typeof shape === 'string') {
+              baseShapes.push(shape)
             }
-            return createShape({ path: shapeMeta.path!, matrix: shapeMeta.matrix })
           })
-          allShapes.push(...customShapes)
+        }
 
+        // _selectedCustomShapes가 있는 경우 커스텀 shape 생성
+        if (option._selectedCustomShapes && option._selectedCustomShapes.length > 0) {
+          const customShapes = option._selectedCustomShapes.map((shapeMeta) => {
+            if (shapeMeta.type === 'svg' && shapeMeta.svg) {
+              // scalar 값을 곱셈
+              const finalScalar = (shapeMeta.scalar || 1) * optionScalar
+              return createShape({ svg: shapeMeta.svg, scalar: finalScalar })
+            } else if (shapeMeta.type === 'path' && shapeMeta.path) {
+              return createShape({ path: shapeMeta.path, matrix: shapeMeta.matrix })
+            }
+            return null
+          })
+
+          const validShapes = customShapes.filter((s) => s !== null)
           return {
             ...option,
-            shapes: allShapes.length > 0 ? (allShapes as any) : option.shapes, // Shape | Promise<Shape> 타입 허용
+            shapes: [...baseShapes, ...validShapes],
           }
-        })
-      }
+        }
 
-      const resolvedOptions = await resolveShapePromises(optionsWithShapes)
-      fire(resolvedOptions)
+        // _selectedCustomShapes가 없지만 placeholder가 있을 수 있음
+        if (option.shapes && Array.isArray(option.shapes)) {
+          const resolvedShapes = option.shapes.map((shape: any) => {
+            // Placeholder인 경우 실제 Shape로 변환
+            if (shape && typeof shape === 'object' && shape.__isShapePlaceholder) {
+              if ('svg' in shape) {
+                const finalScalar = (shape.scalar || 1) * optionScalar
+                return createShape({ svg: shape.svg, scalar: finalScalar })
+              }
+              if ('path' in shape) {
+                return createShape({ path: shape.path, matrix: shape.matrix })
+              }
+            }
+            return shape
+          })
+          return { ...option, shapes: resolvedShapes }
+        }
+
+        return option
+      })
+
+      fire(optionsWithShapes)
     }
   }
 
   // 커스텀 옵션으로 실행
-  const fireCustom = async () => {
-    // SVG shape가 포함되어 있는지 확인
-    const hasSvgShape =
-      (customShapeType === 'svg' && customShapeSvg.trim()) ||
-      selectedCustomShapes.some((preset) => preset.type === 'svg')
-
-    if (hasSvgShape) {
-      // SVG shape가 있으면 Promise를 해결한 후 flat: true로 fire (회전/기울어짐 제거)
-      const optionsWithResolvedShapes = { ...currentOptions, flat: true }
-
-      if (optionsWithResolvedShapes.shapes && Array.isArray(optionsWithResolvedShapes.shapes)) {
-        const resolvedShapes = await Promise.all(
-          optionsWithResolvedShapes.shapes.map((shape) => {
-            // Promise인지 확인
-            if (shape && typeof shape === 'object' && 'then' in shape) {
-              return shape
-            }
-            return Promise.resolve(shape)
-          })
-        )
-        optionsWithResolvedShapes.shapes = resolvedShapes
-      }
-
-      fire(optionsWithResolvedShapes)
-    } else {
-      // SVG가 없으면 바로 fire
-      fire(currentOptions)
-    }
+  const fireCustom = () => {
+    // fire 함수가 자동으로 Promise를 resolve하므로 바로 전달
+    fire(currentOptions)
   }
 
   // 프리셋에 현재 옵션 추가
@@ -1025,7 +989,15 @@ export function PreviewPage() {
       )}
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-2">
-          <h1 className="text-4xl font-bold text-gray-800">Confetti 미리보기</h1>
+          <div className="flex items-center gap-4">
+            <h1 className="text-4xl font-bold text-gray-800">Confetti 미리보기</h1>
+            <a
+              href="/example"
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-colors shadow-md hover:shadow-lg"
+            >
+              📝 코드 테스트
+            </a>
+          </div>
 
           {/* Canvas 바운더리 토글 버튼 */}
           <div className="flex items-center gap-3">

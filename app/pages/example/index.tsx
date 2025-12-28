@@ -3,6 +3,23 @@ import { useConfetti } from '~/shared/confetti/use-confetti'
 
 type EffectMode = 'fire' | 'fireFrame'
 
+interface DevicePreset {
+  name: string
+  width: number
+  height: number
+}
+
+const DEVICE_PRESETS: DevicePreset[] = [
+  { name: 'Galaxy Fold', width: 280, height: 653 },
+  { name: 'Galaxy Fold (펼침)', width: 717, height: 512 },
+  { name: 'iPhone SE', width: 375, height: 667 },
+  { name: 'iPhone 12/13', width: 390, height: 844 },
+  { name: 'iPhone 14 Pro Max', width: 430, height: 932 },
+  { name: 'iPad Mini', width: 768, height: 1024 },
+  { name: 'iPad Pro 11"', width: 834, height: 1194 },
+  { name: 'Custom', width: 0, height: 0 }, // Custom 옵션
+]
+
 export function ExamplePage() {
   const { fire, fireFrame, createShape, setConfettiCanvasRef } = useConfetti()
   const [mode, setMode] = useState<EffectMode>('fire')
@@ -11,6 +28,11 @@ export function ExamplePage() {
   const [useCustomCanvas, setUseCustomCanvas] = useState(false)
   const [duration, setDuration] = useState(3000)
   const cleanupRef = useRef<(() => void) | null>(null)
+
+  // Canvas 크기 프리셋
+  const [selectedDeviceIndex, setSelectedDeviceIndex] = useState(2) // iPhone 12/13 기본값
+  const [customWidth, setCustomWidth] = useState(390)
+  const [customHeight, setCustomHeight] = useState(844)
 
 
   const handleTest = () => {
@@ -155,13 +177,92 @@ export function ExamplePage() {
                 🎉 테스트 실행
               </button>
             </div>
-            <div className="relative bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl overflow-hidden border-4 border-blue-500/50">
+
+            {/* 기기 프리셋 선택 */}
+            <div className="mb-4">
+              <label className="block text-white text-sm font-semibold mb-2">
+                기기 프리셋
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {DEVICE_PRESETS.map((device, index) => (
+                  <button
+                    key={device.name}
+                    onClick={() => {
+                      setSelectedDeviceIndex(index)
+                      if (index === DEVICE_PRESETS.length - 1) {
+                        // Custom 선택 시 현재 값 유지
+                        return
+                      }
+                      setCustomWidth(device.width)
+                      setCustomHeight(device.height)
+                    }}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      selectedDeviceIndex === index
+                        ? 'bg-purple-600 text-white'
+                        : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                    }`}
+                  >
+                    {device.name}
+                    {index !== DEVICE_PRESETS.length - 1 && (
+                      <span className="ml-1 text-xs opacity-70">
+                        ({device.width}×{device.height})
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Custom 크기 입력 */}
+            {selectedDeviceIndex === DEVICE_PRESETS.length - 1 && (
+              <div className="mb-4 grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-white text-sm font-semibold mb-2">
+                    너비 (px)
+                  </label>
+                  <input
+                    type="number"
+                    value={customWidth}
+                    onChange={(e) => setCustomWidth(Number(e.target.value))}
+                    min={100}
+                    max={1200}
+                    step={10}
+                    className="w-full px-4 py-2 bg-gray-900 text-white rounded-lg border border-gray-700 focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-white text-sm font-semibold mb-2">
+                    높이 (px)
+                  </label>
+                  <input
+                    type="number"
+                    value={customHeight}
+                    onChange={(e) => setCustomHeight(Number(e.target.value))}
+                    min={100}
+                    max={1400}
+                    step={10}
+                    className="w-full px-4 py-2 bg-gray-900 text-white rounded-lg border border-gray-700 focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+            )}
+
+            <div
+              className="relative bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl overflow-hidden border-4 border-blue-500/50 mx-auto"
+              style={{
+                width: `${customWidth}px`,
+                height: `${customHeight}px`,
+                maxWidth: '100%',
+              }}
+            >
               <canvas
                 ref={setConfettiCanvasRef}
-                className="w-full h-96 block"
+                className="w-full h-full block"
               />
               <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-                <p className="text-gray-500 text-sm font-medium">Confetti 효과 영역</p>
+                <p className="text-gray-500 text-sm font-medium">
+                  {customWidth}×{customHeight}
+                </p>
               </div>
             </div>
           </div>

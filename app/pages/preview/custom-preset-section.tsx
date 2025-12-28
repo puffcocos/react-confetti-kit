@@ -10,7 +10,6 @@ interface CustomPresetSectionProps {
   editingPresetIndex: number | null
   editingEffectIndex: number | null
   activeCustomPreset: number | null
-  useCustomCanvas: boolean
   onAddToPreset: () => void
   onRemoveFromPreset: (index: number) => void
   onPresetNameChange: (name: string) => void
@@ -36,7 +35,6 @@ export function CustomPresetSection({
   editingPresetIndex,
   editingEffectIndex,
   activeCustomPreset,
-  useCustomCanvas,
   onAddToPreset,
   onRemoveFromPreset,
   onPresetNameChange,
@@ -326,7 +324,7 @@ export function CustomPresetSection({
           })}
 
           {/* Fire 버튼 */}
-          {!useCustomCanvas && activeCustomPreset !== null && (
+          {activeCustomPreset !== null && (
             <div className="mt-4 animate-fade-in-simple">
               <button
                 onClick={onFireCustomPreset}

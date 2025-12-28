@@ -1,8 +1,7 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef } from 'react'
 import { confettiPresets } from '~/shared/confetti/presets'
 import { useConfetti } from '~/shared/confetti/use-confetti'
 import { useLocalStorage } from '~/hooks/use-local-storage'
-import { useSessionStorage } from '~/hooks/use-session-storage'
 import { PresetSection } from './preset-section'
 import { CustomPresetSection } from './custom-preset-section'
 import { SettingsPanel } from './settings-panel'
@@ -18,20 +17,12 @@ import type {
  * Confetti 미리보기 페이지
  */
 export function PreviewPage() {
-  const { fire, fireFrame, createShape, setConfettiCanvasRef } = useConfetti()
-  const [useCustomCanvas, setUseCustomCanvas] = useState(false)
+  const { fire, fireFrame, createShape } = useConfetti()
 
   // 활성화된 프리셋 상태
   const [activeBuiltInPreset, setActiveBuiltInPreset] = useState<string | null>(null)
   const [activeCustomPreset, setActiveCustomPreset] = useState<number | null>(null)
 
-  // 세션 스토리지와 동기화되는 Canvas 크기 상태
-  const [canvasWidth, setCanvasWidth] = useSessionStorage<number | null>(
-    'confetti-canvas-width',
-    null
-  )
-  const [canvasHeight, setCanvasHeight] = useSessionStorage<number>('confetti-canvas-height', 400)
-  const canvasContainerRef = useRef<HTMLDivElement>(null)
 
   // 커스텀 옵션 상태
   const [particleCount, setParticleCount] = useState<number>(DEFAULT_VALUES.particleCount)
@@ -125,15 +116,6 @@ export function PreviewPage() {
   const [useTiltWobble, setUseTiltWobble] = useState(false)
   const [useRotation, setUseRotation] = useState(false)
 
-  // Canvas 미리보기 토글 상태
-  const [isCanvasPreviewOpen, setIsCanvasPreviewOpen] = useState(false)
-
-  // Canvas 바운더리 버튼 ref (popover 위치 기준)
-  const canvasBoundaryButtonRef = useRef<HTMLButtonElement>(null)
-  const [popoverPosition, setPopoverPosition] = useState({ top: 0, right: 0 })
-
-  // Popover 컨텐츠 영역의 최대 너비 (w-96 = 384px, p-4 = 32px 제외 = 352px)
-  const maxCanvasWidth = 352
 
   // Snow 효과 오버레이 상태
   const [showSnowOverlay, setShowSnowOverlay] = useState(false)
@@ -141,29 +123,6 @@ export function PreviewPage() {
   // Frame cleanup 함수 저장용
   const frameCleanupRef = useRef<(() => void) | null>(null)
 
-  // Popover 위치 계산
-  useEffect(() => {
-    const updatePosition = () => {
-      if (canvasBoundaryButtonRef.current && isCanvasPreviewOpen) {
-        const buttonRect = canvasBoundaryButtonRef.current.getBoundingClientRect()
-        setPopoverPosition({
-          top: buttonRect.bottom + 8, // 버튼 아래 8px
-          right: window.innerWidth - buttonRect.right, // 오른쪽 정렬
-        })
-      }
-    }
-
-    updatePosition()
-
-    // 스크롤 시 위치 재계산
-    window.addEventListener('scroll', updatePosition)
-    window.addEventListener('resize', updatePosition)
-
-    return () => {
-      window.removeEventListener('scroll', updatePosition)
-      window.removeEventListener('resize', updatePosition)
-    }
-  }, [isCanvasPreviewOpen])
 
   // 현재 옵션 조합
   const currentOptions: EditorConfettiOptions = {
@@ -1029,183 +988,25 @@ export function PreviewPage() {
       )}
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-4">
-            <h1 className="text-4xl font-bold text-gray-800">Confetti 미리보기</h1>
-            <a
-              href="/example"
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-colors shadow-md hover:shadow-lg"
-            >
-              📝 코드 테스트
-            </a>
-          </div>
+          <h1 className="text-4xl font-bold text-gray-800">Confetti 미리보기</h1>
 
-          {/* Canvas 바운더리 토글 버튼 */}
+          {/* 코드 테스트 버튼 */}
           <div className="flex items-center gap-3">
             <div className="text-right">
-              <div className="text-sm font-semibold text-gray-800">Canvas 바운더리</div>
-              <div className="text-xs text-gray-500">특정 영역에서만 렌더링</div>
+              <div className="text-sm font-semibold text-gray-800">코드 테스트</div>
+              <div className="text-xs text-gray-500">복사한 코드 실행</div>
             </div>
-            <button
-              ref={canvasBoundaryButtonRef}
-              onClick={() => {
-                const newValue = !useCustomCanvas
-                setUseCustomCanvas(newValue)
-                if (!newValue) {
-                  // Canvas 비활성화 시
-                  setConfettiCanvasRef(null)
-                  setIsCanvasPreviewOpen(false)
-                } else {
-                  // Canvas 활성화 시 자동으로 팝업 열기
-                  setIsCanvasPreviewOpen(true)
-                }
-              }}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                useCustomCanvas
-                  ? 'bg-purple-600 text-white hover:bg-purple-700'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
+            <a
+              href="/confetti-editor/example"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2 rounded-lg font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors"
             >
-              {useCustomCanvas ? 'ON' : 'OFF'}
-            </button>
+              테스트
+            </a>
           </div>
         </div>
         <p className="text-gray-600 mb-8">다양한 옵션을 조절하며 confetti 효과를 테스트해보세요</p>
-
-        {/* Canvas 바운더리 Popover */}
-        {useCustomCanvas && isCanvasPreviewOpen && (
-          <div
-            className="fixed z-50 w-96 animate-fade-in"
-            style={{
-              top: `${popoverPosition.top}px`,
-              right: `${popoverPosition.right}px`,
-            }}
-          >
-            <div className="bg-white rounded-lg border border-gray-200">
-              {/* 헤더 */}
-              <div className="bg-purple-600 px-4 py-2.5 flex items-center justify-between rounded-t-lg">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-sm font-medium text-white">Canvas 바운더리</span>
-
-                  {/* 커스텀 프리셋 활성화 */}
-                  {activeCustomPreset !== null && (
-                    <span className="bg-white/20 px-2 py-0.5 rounded text-xs text-white">
-                      {customPresets[activeCustomPreset].name}
-                    </span>
-                  )}
-
-                  {/* 기본 프리셋 활성화 */}
-                  {activeBuiltInPreset !== null && (
-                    <span className="bg-white/20 px-2 py-0.5 rounded text-xs text-white">
-                      {activeBuiltInPreset}
-                    </span>
-                  )}
-
-                  {/* 수정 모드 */}
-                  {editingPresetIndex !== null && editingEffectIndex !== null && (
-                    <span className="bg-yellow-400/90 px-2 py-0.5 rounded text-xs text-purple-900 font-medium">
-                      🔧 {customPresets[editingPresetIndex].name} 효과 {editingEffectIndex + 1} 수정
-                      중
-                    </span>
-                  )}
-
-                  {/* 일반 효과 테스트 (프리셋/수정 모드 아닐 때) */}
-                  {activeCustomPreset === null &&
-                    activeBuiltInPreset === null &&
-                    editingPresetIndex === null && (
-                      <span className="bg-white/20 px-2 py-0.5 rounded text-xs text-white">
-                        커스텀 효과
-                      </span>
-                    )}
-                </div>
-                <button
-                  onClick={() => {
-                    setIsCanvasPreviewOpen(false)
-                    setUseCustomCanvas(false)
-                    setConfettiCanvasRef(null)
-                  }}
-                  className="text-white/90 hover:text-white hover:bg-white/20 rounded p-1 transition-colors flex-shrink-0"
-                  title="닫기"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
-              </div>
-
-              {/* 내용 */}
-              <div className="p-4">
-                {/* Canvas 크기 조절 */}
-                <div className="mb-3 grid grid-cols-2 gap-3">
-                  {/* 너비 조절 */}
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                      너비: {canvasWidth === null ? '100%' : `${canvasWidth}px`}
-                    </label>
-                    <input
-                      type="range"
-                      min="100"
-                      max={maxCanvasWidth}
-                      step="10"
-                      value={canvasWidth ?? maxCanvasWidth}
-                      onChange={(e) => {
-                        const value = Number(e.target.value)
-                        // 최대값에 도달하면 100%로 설정
-                        if (value === maxCanvasWidth) {
-                          setCanvasWidth(null)
-                        } else {
-                          setCanvasWidth(value)
-                        }
-                      }}
-                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-600"
-                    />
-                  </div>
-
-                  {/* 높이 조절 */}
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                      높이: {canvasHeight}px
-                    </label>
-                    <input
-                      type="range"
-                      min="100"
-                      max="400"
-                      step="10"
-                      value={canvasHeight}
-                      onChange={(e) => setCanvasHeight(Number(e.target.value))}
-                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-600"
-                    />
-                  </div>
-                </div>
-
-                {/* Canvas 영역 */}
-                <div
-                  ref={canvasContainerRef}
-                  style={{
-                    width: canvasWidth === null ? '100%' : `${canvasWidth}px`,
-                    height: `${canvasHeight}px`,
-                    margin: '0 auto',
-                  }}
-                  className="relative border border-purple-300 rounded bg-white overflow-hidden"
-                >
-                  <canvas ref={setConfettiCanvasRef} className="w-full h-full" />
-                </div>
-
-                {/* 실행 버튼 */}
-                <button
-                  onClick={fireActivePreset}
-                  className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg font-medium text-sm hover:bg-purple-700 transition-colors mt-3"
-                >
-                  🎉 fire!
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
           {/* 왼쪽: 프리셋 & 특수 효과 */}
@@ -1223,7 +1024,6 @@ export function PreviewPage() {
               editingPresetIndex={editingPresetIndex}
               editingEffectIndex={editingEffectIndex}
               activeCustomPreset={activeCustomPreset}
-              useCustomCanvas={useCustomCanvas}
               onAddToPreset={addToPreset}
               onRemoveFromPreset={removeFromPreset}
               onPresetNameChange={setPresetName}
@@ -1277,7 +1077,6 @@ export function PreviewPage() {
               colorPresetName={colorPresetName}
               editingColorPresetIndex={editingColorPresetIndex}
               activeColorPreset={activeColorPreset}
-              useCustomCanvas={useCustomCanvas}
               useTiltWobble={useTiltWobble}
               useRotation={useRotation}
               onParticleCountChange={setParticleCount}

@@ -65,9 +65,6 @@ interface SettingsPanelProps {
   shapePresetName: string
   editingShapePresetIndex: number | null
 
-  // Canvas 바운더리 상태
-  useCustomCanvas: boolean
-
   // 실험적 기능 사용 여부 (분리된 토글)
   useTiltWobble: boolean
   useRotation: boolean
@@ -189,7 +186,6 @@ export function SettingsPanel(props: SettingsPanelProps) {
     selectedCustomShapes,
     shapePresetName,
     editingShapePresetIndex,
-    useCustomCanvas,
     useTiltWobble,
     useRotation,
     onParticleCountChange,
@@ -1326,14 +1322,12 @@ export function SettingsPanel(props: SettingsPanelProps) {
         {editingPresetIndex !== null && editingEffectIndex !== null ? (
           // 수정 모드
           <div className="animate-fade-in-simple space-y-2">
-            {!useCustomCanvas && (
-              <button
-                onClick={onFireCustom}
-                className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-bold text-sm hover:from-purple-700 hover:to-blue-700 active:scale-[0.98] transition-[transform,colors,shadow] duration-200 shadow-lg hover:shadow-xl will-change-transform select-none"
-              >
-                🎉 {customPresets[editingPresetIndex].name} 효과 {editingEffectIndex + 1} 테스트
-              </button>
-            )}
+            <button
+              onClick={onFireCustom}
+              className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-bold text-sm hover:from-purple-700 hover:to-blue-700 active:scale-[0.98] transition-[transform,colors,shadow] duration-200 shadow-lg hover:shadow-xl will-change-transform select-none"
+            >
+              🎉 {customPresets[editingPresetIndex].name} 효과 {editingEffectIndex + 1} 테스트
+            </button>
             <div className="flex gap-2">
               <button
                 onClick={onUpdateEffectInPreset}
@@ -1351,11 +1345,9 @@ export function SettingsPanel(props: SettingsPanelProps) {
           </div>
         ) : (
           // 일반 모드
-          !useCustomCanvas && (
-            <div className="animate-fade-in-simple">
-              <FireButton onFire={onFireCustom} label="효과 테스트" />
-            </div>
-          )
+          <div className="animate-fade-in-simple">
+            <FireButton onFire={onFireCustom} label="효과 테스트" />
+          </div>
         )}
       </div>
 

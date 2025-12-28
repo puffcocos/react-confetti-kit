@@ -59,24 +59,121 @@ interface ShapeFromSvgOptions {
  */
 export function useConfetti() {
   const customConfettiRef = useRef<CreateTypes | null>(null)
+  const customConfettiWorkerlessRef = useRef<CreateTypes | null>(null)
+  const workerlessConfettiRef = useRef<CreateTypes | null>(null)
+
+  // Worker 없는 confetti 인스턴스 (SVG shape 사용 시)
+  if (!workerlessConfettiRef.current) {
+    workerlessConfettiRef.current = confetti.create(null, {
+      resize: true,
+      useWorker: false
+    })
+  }
 
   // Canvas ref setter
   const setConfettiCanvasRef = useCallback((canvas: HTMLCanvasElement | null) => {
     if (canvas) {
-      customConfettiRef.current = confetti.create(canvas, { resize: true })
+      // Worker 활성화 인스턴스 (성능 최대화)
+      customConfettiRef.current = confetti.create(canvas, {
+        resize: true,
+        useWorker: true,
+      })
+      // Worker 비활성화 인스턴스 (SVG 혼합 시 사용)
+      customConfettiWorkerlessRef.current = confetti.create(canvas, {
+        resize: true,
+        useWorker: false,
+      })
     } else {
       customConfettiRef.current = null
+      customConfettiWorkerlessRef.current = null
     }
   }, [])
 
-  const fire = useCallback(async (options?: ConfettiOptions | ConfettiOptions[]) => {
-    // 커스텀 canvas가 설정되어 있으면 해당 canvas 사용, 아니면 기본 confetti 사용
-    const confettiFn = customConfettiRef.current || confetti
+  /**
+   * SVG shape 포함 여부 확인 (resolved Shape 객체 기반)
+   */
+  const hasSvgShape = (option: ConfettiOptions): boolean => {
+    if (!option.shapes || !Array.isArray(option.shapes)) {
+      return false
+    }
+    return option.shapes.some((shape) => {
+      if (typeof shape === 'object' && shape !== null && 'type' in shape) {
+        const shapeType = (shape as any).type
+        return shapeType === 'svg'
+      }
+      return false
+    })
+  }
 
+  /**
+   * SVG가 아닌 다른 shape 포함 여부 확인 (기본 파티클 + Path)
+   */
+  const hasNonSvgShape = (option: ConfettiOptions): boolean => {
+    // shapes가 없는 경우 = 기본 파티클만 사용
+    if (!option.shapes || option.shapes.length === 0) {
+      return true
+    }
+
+    // 문자열 shape (기본 파티클) 또는 SVG가 아닌 Shape 객체가 있는지 확인
+    return option.shapes.some((shape) => {
+      // 문자열 (기본 파티클)
+      if (typeof shape === 'string') {
+        return true
+      }
+      // Shape 객체이고 SVG가 아닌 경우 (path, bitmap 등)
+      if (typeof shape === 'object' && shape !== null && 'type' in shape) {
+        const shapeType = (shape as any).type
+        return shapeType !== 'svg'
+      }
+      return false
+    })
+  }
+
+  /**
+   * SVG shape와 non-SVG shape가 혼합되어 있는지 확인
+   *
+   * @description
+   * canvas-confetti는 성능 향상을 위해 기본적으로 Web Worker를 사용합니다.
+   *
+   * 그러나 SVG shape와 다른 타입(Path, 기본 파티클)을 혼합해서 사용할 때
+   * Worker를 활성화하면 다음 에러가 발생합니다:
+   * "Cannot get context from a canvas that has transferred its control to offscreen"
+   *
+   * 이는 Worker가 canvas 제어권을 OffscreenCanvas로 이전하는 과정에서
+   * SVG shape 처리와 충돌하기 때문으로 추정됩니다.
+   *
+   * 따라서 다음과 같이 조건부로 worker를 비활성화합니다:
+   * - SVG만 사용: Worker 사용 ✅ (성능 최대화)
+   * - Path만 사용: Worker 사용 ✅ (성능 최대화)
+   * - 기본 파티클만 사용: Worker 사용 ✅ (성능 최대화)
+   * - SVG + 다른 타입 혼합: Worker 비활성화 ❌ (OffscreenCanvas 충돌 방지)
+   *
+   * @param options - 확인할 confetti 옵션 배열 (shapes가 이미 resolve된 상태)
+   * @returns SVG와 non-SVG가 혼합되어 있으면 true
+   */
+  const shouldUseWorkerlessMode = (options: ConfettiOptions[]): boolean => {
+    let hasSvgEffect = false
+    let hasNonSvgEffect = false
+
+    for (const opt of options) {
+      if (hasSvgShape(opt)) hasSvgEffect = true
+      if (hasNonSvgShape(opt)) hasNonSvgEffect = true
+      // 둘 다 발견되면 조기 종료 (성능 최적화)
+      if (hasSvgEffect && hasNonSvgEffect) break
+    }
+
+    return hasSvgEffect && hasNonSvgEffect
+  }
+
+  const fire = useCallback(async (options?: ConfettiOptions | ConfettiOptions[]) => {
     if (!options) {
+      const confettiFn = customConfettiRef.current || confetti
       confettiFn({})
       return
     }
+
+    // 옵션 배열 여부 확인
+    const optionsArray = Array.isArray(options) ? options : [options]
 
     // Promise<Shape>를 해결하는 헬퍼 함수
     const resolveShapes = async (option: ConfettiOptions) => {
@@ -84,19 +181,48 @@ export function useConfetti() {
         return option
       }
 
-      // shapes 배열의 모든 Promise를 해결
-      const resolvedShapes = await Promise.all(option.shapes)
+      // shapes 배열의 Promise를 순차적으로 해결 (canvas 접근 충돌 방지)
+      const resolvedShapes = []
+      for (const shape of option.shapes) {
+        resolvedShapes.push(await shape)
+      }
       return { ...option, shapes: resolvedShapes }
     }
 
-    // 배열인 경우 모든 효과를 순차적으로 실행
-    if (Array.isArray(options)) {
-      for (const option of options) {
-        const resolved = await resolveShapes(option)
-        confettiFn(resolved as any)
-      }
-    } else {
-      const resolved = await resolveShapes(options)
+    // 1. 먼저 모든 shapes를 resolve
+    const resolvedOptions = []
+    for (const option of optionsArray) {
+      resolvedOptions.push(await resolveShapes(option))
+    }
+
+    // 2. resolve된 shapes로 Worker 모드 결정
+    const needsWorkerless = shouldUseWorkerlessMode(resolvedOptions)
+
+    // 3. 디버그: Worker 모드 로깅
+    if (import.meta.env.DEV) {
+      const shapeTypes = resolvedOptions.map((opt) => {
+        const shapes = opt.shapes || []
+        if (shapes.length === 0) return 'built-in'
+        const types = shapes.map((s) => {
+          if (typeof s === 'string') return 'built-in'
+          if (typeof s === 'object' && s !== null && 'type' in s) {
+            return (s as any).type
+          }
+          return 'unknown'
+        })
+        return types.join('+')
+      })
+      console.log('[useConfetti] Worker mode:', needsWorkerless ? '❌ Disabled (workerless)' : '✅ Enabled')
+      console.log('[useConfetti] Effects:', resolvedOptions.length, 'Shapes:', shapeTypes)
+    }
+
+    // 4. Worker 모드에 따라 적절한 인스턴스 선택
+    const confettiFn = needsWorkerless
+      ? customConfettiWorkerlessRef.current || workerlessConfettiRef.current!
+      : customConfettiRef.current || confetti
+
+    // 5. resolve된 효과들을 순차적으로 실행
+    for (const resolved of resolvedOptions) {
       confettiFn(resolved as any)
     }
   }, [])
@@ -110,7 +236,6 @@ export function useConfetti() {
 
       // Path 타입인 경우
       if (options.matrix) {
-        // 배열을 DOMMatrix로 변환
         const matrix = new DOMMatrix(options.matrix)
         return confetti.shapeFromPath({ path: options.path, matrix })
       }

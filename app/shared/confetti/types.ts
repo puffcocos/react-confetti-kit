@@ -40,10 +40,6 @@ export interface ConfettiOptions extends Omit<BaseConfettiOptions, 'shapes'> {
 
   // shapes 속성 재정의 - Promise<Shape>도 허용
   shapes?: Array<Shape | Promise<Shape> | string>
-
-  // 내부 메타데이터 (UI 동기화 및 코드 생성용)
-  _useCustomShapes?: boolean
-  _selectedCustomShapes?: any[]
 }
 
 /**

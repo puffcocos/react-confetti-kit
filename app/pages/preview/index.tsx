@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from 'react'
-import type { ConfettiOptions } from '~/shared/confetti/types'
 import { confettiPresets } from '~/shared/confetti/presets'
 import { useConfetti } from '~/shared/confetti/use-confetti'
 import { useLocalStorage } from '~/hooks/use-local-storage'
@@ -8,7 +7,12 @@ import { PresetSection } from './preset-section'
 import { CustomPresetSection } from './custom-preset-section'
 import { SettingsPanel } from './settings-panel'
 import { DEFAULT_VALUES } from './constants'
-import type { CustomPreset, CustomColorPreset, CustomShapePreset } from './types'
+import type {
+  CustomPreset,
+  CustomColorPreset,
+  CustomShapePreset,
+  EditorConfettiOptions,
+} from './types'
 
 /**
  * Confetti 미리보기 페이지
@@ -90,7 +94,7 @@ export function PreviewPage() {
     []
   )
   const [presetName, setPresetName] = useState('')
-  const [presetOptions, setPresetOptions] = useState<ConfettiOptions[]>([])
+  const [presetOptions, setPresetOptions] = useState<EditorConfettiOptions[]>([])
 
   // 복사 상태 관리
   const [copiedMain, setCopiedMain] = useState(false)
@@ -162,7 +166,7 @@ export function PreviewPage() {
   }, [isCanvasPreviewOpen])
 
   // 현재 옵션 조합
-  const currentOptions: ConfettiOptions = {
+  const currentOptions: EditorConfettiOptions = {
     particleCount,
     spread,
     startVelocity,

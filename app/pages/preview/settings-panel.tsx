@@ -671,7 +671,6 @@ export function SettingsPanel(props: SettingsPanelProps) {
                           <p className="font-medium mb-1">SVG Path (권장):</p>
                           <ul className="list-disc list-inside space-y-1 text-xs ml-2">
                             <li>✅ 빠른 렌더링 성능 (Path2D 사용)</li>
-                            <li>✅ Wobble, Tilt 효과 완벽 지원</li>
                             <li>성능을 위해 matrix를 미리 계산합니다</li>
                           </ul>
                         </div>
@@ -679,7 +678,6 @@ export function SettingsPanel(props: SettingsPanelProps) {
                           <p className="font-medium mb-1">Full SVG:</p>
                           <ul className="list-disc list-inside space-y-1 text-xs ml-2">
                             <li>⚠️ 상대적으로 느린 성능 (Image 객체 사용)</li>
-                            <li>⚠️ 실험적 기능의 Wobble/Tilt 효과 미지원</li>
                             <li>복잡한 그라디언트/색상이 필요할 때만 사용</li>
                           </ul>
                         </div>

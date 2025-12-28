@@ -1,5 +1,4 @@
-import type { ConfettiOptions } from '~/shared/confetti/types'
-import type { CustomShapePreset } from './types'
+import type { CustomShapePreset, EditorConfettiOptions } from './types'
 
 /**
  * 코드 포맷팅 유틸리티
@@ -21,7 +20,7 @@ interface FormatCodeOptions {
  * ConfettiOptions 배열을 fire() 함수 호출 코드로 포맷팅
  */
 export function formatAsFireCode(
-  options: ConfettiOptions[],
+  options: EditorConfettiOptions[],
   formatOptions?: FormatCodeOptions
 ): string {
   return `fire(${formatOptionsAsCode(options, formatOptions)})`
@@ -31,7 +30,7 @@ export function formatAsFireCode(
  * 옵션을 JavaScript 코드 문자열로 포맷팅
  */
 export function formatOptionsAsCode(
-  options: ConfettiOptions[],
+  options: EditorConfettiOptions[],
   formatOptions?: FormatCodeOptions
 ): string {
   if (options.length === 1) {

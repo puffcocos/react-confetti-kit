@@ -2,9 +2,10 @@ import { useState } from 'react'
 import { useConfetti } from '~/shared/confetti/use-confetti'
 
 export function ExamplePage() {
-  const { fire, createShape } = useConfetti()
+  const { fire, createShape, setConfettiCanvasRef } = useConfetti()
   const [code, setCode] = useState('')
   const [error, setError] = useState('')
+  const [useCustomCanvas, setUseCustomCanvas] = useState(false)
 
 
   const handleTest = () => {
@@ -53,6 +54,30 @@ export function ExamplePage() {
           </p>
         </div>
 
+        {/* Custom Canvas Preview Area */}
+        {useCustomCanvas && (
+          <div className="mb-6 bg-white/10 backdrop-blur-md rounded-2xl p-6 shadow-2xl border border-white/20">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold text-white">커스텀 Canvas 미리보기</h2>
+              <button
+                onClick={handleTest}
+                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-blue-700 active:scale-[0.98] transition-[transform,colors] duration-200"
+              >
+                🎉 테스트 실행
+              </button>
+            </div>
+            <div className="relative bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl overflow-hidden border-4 border-blue-500/50">
+              <canvas
+                ref={setConfettiCanvasRef}
+                className="w-full h-96 block"
+              />
+              <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                <p className="text-gray-500 text-sm font-medium">Confetti 효과 영역</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Main Content */}
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 shadow-2xl border border-white/20">
           {/* Code Input */}
@@ -87,17 +112,36 @@ fire([
             </div>
           )}
 
+          {/* Canvas Toggle */}
+          <div className="mb-4">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={useCustomCanvas}
+                onChange={(e) => setUseCustomCanvas(e.target.checked)}
+                className="w-5 h-5 rounded border-gray-400 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer"
+              />
+              <span className="text-white font-medium">
+                커스텀 Canvas 영역 사용 (특정 영역에서만 효과 실행)
+              </span>
+            </label>
+          </div>
+
           {/* Action Buttons */}
           <div className="flex gap-3">
-            <button
-              onClick={handleTest}
-              className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-bold text-lg hover:from-purple-700 hover:to-blue-700 active:scale-[0.98] transition-[transform,colors,shadow] duration-200 shadow-lg hover:shadow-xl"
-            >
-              🎉 테스트 실행
-            </button>
+            {!useCustomCanvas && (
+              <button
+                onClick={handleTest}
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-bold text-lg hover:from-purple-700 hover:to-blue-700 active:scale-[0.98] transition-[transform,colors,shadow] duration-200 shadow-lg hover:shadow-xl"
+              >
+                🎉 테스트 실행
+              </button>
+            )}
             <button
               onClick={handleClear}
-              className="px-6 py-3 bg-gray-700 text-white rounded-lg font-semibold hover:bg-gray-600 active:scale-[0.98] transition-[transform,colors] duration-200"
+              className={`px-6 py-3 bg-gray-700 text-white rounded-lg font-semibold hover:bg-gray-600 active:scale-[0.98] transition-[transform,colors] duration-200 ${
+                useCustomCanvas ? 'flex-1' : ''
+              }`}
             >
               지우기
             </button>
@@ -109,8 +153,9 @@ fire([
             <ul className="text-gray-300 text-sm space-y-1">
               <li>1. 프리셋 페이지에서 코드를 복사합니다</li>
               <li>2. 위의 텍스트 영역에 붙여넣습니다</li>
-              <li>3. "테스트 실행" 버튼을 클릭합니다</li>
-              <li>4. <code className="bg-gray-800 px-1 rounded">fire()</code> 감싸는 부분은 자동으로 제거됩니다</li>
+              <li>3. (선택) 커스텀 Canvas를 활성화하여 특정 영역에서만 효과를 실행할 수 있습니다</li>
+              <li>4. "테스트 실행" 버튼을 클릭합니다</li>
+              <li>5. <code className="bg-gray-800 px-1 rounded">fire()</code> 감싸는 부분은 자동으로 제거됩니다</li>
             </ul>
           </div>
         </div>

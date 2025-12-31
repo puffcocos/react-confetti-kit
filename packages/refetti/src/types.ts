@@ -17,13 +17,13 @@
  */
 
 // 로컬 confetti import
-import type { Shape } from './lib/canvas-confetti/confetti'
+import type { Shape } from './vendors/canvas-confetti/confetti'
 
 // 로컬 canvas-confetti의 기본 타입
-import type { Options as BaseConfettiOptions } from './lib/canvas-confetti/confetti'
+import type { Options as BaseConfettiOptions } from './vendors/canvas-confetti/confetti'
 
 // canvas-confetti의 나머지 타입들 re-export
-export type { Shape, CreateTypes, GlobalOptions, Origin } from './lib/canvas-confetti/confetti'
+export type { Shape, CreateTypes, GlobalOptions, Origin } from './vendors/canvas-confetti/confetti'
 
 // 새로운 실험적 옵션들을 포함한 확장 타입
 export interface ConfettiOptions extends Omit<BaseConfettiOptions, 'shapes'> {

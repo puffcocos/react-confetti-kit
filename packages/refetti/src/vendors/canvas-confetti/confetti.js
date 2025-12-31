@@ -243,7 +243,11 @@ var module = {}
     scalar: 1,
     // probably should be true, but back-compat
     disableForReducedMotion: false,
-    /* New feature 3-D wobble/tilt control  */
+    /**
+     * ✨ NEW FEATURES
+     * 3D Wobble 및 Tilt(기울기)를 세밀하게 제어하기 위한 기본 옵션들을 추가했습니다.
+     * 기존에는 randomPhysics 내부에 하드코딩되어 있었으나, 이제 외부에서 설정 가능합니다.
+     */
     tiltRange: [Math.PI * 0.25, Math.PI * 0.75], // [min,max] radians
     tiltSpeed: [0.05, 0.4], // radians per frame
     wobbleRange: [0, 10], // “radius” units
@@ -366,7 +370,11 @@ var module = {}
       ovalScalar: 0.6,
       scalar: opts.scalar,
       flat: opts.flat,
-      // 평면 회전 (z축 회전)
+      /**
+       * ✨ NEW FEATURES
+       * 평면 회전(z축 회전) 기능을 추가했습니다. 기본 wobble/tilt 외에
+       * 파티클 자체의 회전 각도와 속도, 방향을 제어할 수 있습니다.
+       */
       rotation: opts.rotation || 0,
       rotationSpeed: opts.rotationSpeed
         ? (Math.random() * (opts.rotationSpeed[1] - opts.rotationSpeed[0]) + opts.rotationSpeed[0]) *
@@ -380,10 +388,18 @@ var module = {}
     fetti.y += Math.sin(fetti.angle2D) * fetti.velocity + fetti.gravity
     fetti.velocity *= fetti.decay
 
-    // 평면 회전 업데이트 (z축 회전)
+    /**
+     * ✨ NEW FEATURES
+     * 매 프레임마다 z축 회전 값을 업데이트합니다.
+     */
     fetti.rotation += fetti.rotationSpeed
 
     if (fetti.flat) {
+      /**
+       * ✨ NEW FEATURES
+       * 'flat' 모드에서는 3D 효과(wobble, tilt)를 비활성화하여
+       * 2D 평면 상에서만 움직이고 회전하도록 설정합니다.
+       */
       fetti.wobble = 0
       fetti.wobbleX = fetti.x + 10 * fetti.scalar
       fetti.wobbleY = fetti.y + 10 * fetti.scalar
@@ -391,7 +407,6 @@ var module = {}
       fetti.tiltSin = 0
       fetti.tiltCos = 0
       fetti.random = 1
-      // New 3-d wobble/tilt control
       fetti.tiltIncrement = 0
     } else {
       fetti.wobble += fetti.wobbleSpeed
@@ -443,7 +458,11 @@ var module = {}
         )
       )
     } else if (fetti.shape.type === 'svg') {
-      // Direct SVG rendering - keeps vector quality
+      /**
+       * ✨ NEW FEATURES
+       * SVG 이미지를 캔버스에 직접 렌더링합니다.
+       * 비트맵 변환 없이 벡터 퀄리티를 유지하며, 기본 파티클과 동일한 3D Tilt 효과를 지원합니다.
+       */
       var rotation = (Math.PI / 10) * fetti.wobble + (fetti.rotation * Math.PI) / 180
       var width = fetti.shape.width * fetti.scalar
       var height = fetti.shape.height * fetti.scalar
@@ -517,6 +536,10 @@ var module = {}
       context.fillRect(fetti.x - width / 2, fetti.y - height / 2, width, height)
       context.globalAlpha = 1
     } else if (fetti.shape === 'circle') {
+      /**
+       * ✨ NEW FEATURES
+       * 원형(Circle) 파티클에도 z축 회전(rotation)을 적용할 수 있도록 개선했습니다.
+       */
       context.ellipse
         ? context.ellipse(
             fetti.x,
@@ -538,6 +561,11 @@ var module = {}
             2 * Math.PI
           )
     } else if (fetti.shape === 'star') {
+      /**
+       * ✨ NEW FEATURES
+       * 기본 도형(Square, Circle) 외에 'Star' 모양을 추가했습니다.
+       * 초기 회전 값(rotation)을 반영하여 별 모양을 그립니다.
+       */
       var rot = (Math.PI / 2) * 3 + (fetti.rotation * Math.PI) / 180
       var innerRadius = 4 * fetti.scalar
       var outerRadius = 8 * fetti.scalar
@@ -558,6 +586,10 @@ var module = {}
         rot += step
       }
     } else {
+      /**
+       * ✨ NEW FEATURES
+       * 기본 사각형(Square) 렌더링 시에도 z축 회전(rotation)을 지원하도록 개선했습니다.
+       */
       // square - apply rotation transformation
       context.save()
       context.translate(fetti.x, fetti.y)
@@ -750,8 +782,11 @@ var module = {}
         document.body.appendChild(canvas)
       }
 
-      // Check if shapes contain SVG type BEFORE initializing worker
-      // SVG shapes cannot be sent to Worker (Image objects can't be cloned)
+      /**
+       * ✨ NEW FEATURES
+       * SVG 파티클의 경우 Web Worker로 데이터를 전송(복사)할 수 없으므로(Image 객체 직렬화 불가),
+       * SVG 파티클이 포함된 경우 자동으로 메인 스레드 렌더링 모드로 전환합니다.
+       */
       var shapes = prop(options, 'shapes')
       var hasSvgShape = false
       if (shapes && Array.isArray(shapes)) {
@@ -950,6 +985,12 @@ var module = {}
   }
 
   function shapeFromSvg(svgData) {
+    /**
+     * ✨ NEW FEATURES
+     * SVG 문자열로부터 커스텀 파티클 모양을 생성합니다.
+     * 원본 라이브러리의 비트맵 방식과 달리, Image 객체를 사용하여 벡터의 선명함을 유지하고
+     * 캔버스에서 직접 렌더링할 수 있도록 설계했습니다.
+     */
     var svgString
 
     if (typeof svgData === 'string') {

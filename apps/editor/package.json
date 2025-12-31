@@ -2,7 +2,7 @@
   "name": "@confetti-editor/app",
   "private": true,
   "type": "module",
-  "homepage": "https://puffcocos.github.io/refetti/",
+  "homepage": "https://puffcocos.github.io/react-confetti-kit/",
   "scripts": {
     "build": "react-router build",
     "dev": "react-router dev",
@@ -12,7 +12,7 @@
   "dependencies": {
     "@react-router/node": "^7.9.2",
     "@react-router/serve": "^7.9.2",
-    "refetti": "workspace:*",
+    "react-confetti-kit": "workspace:*",
     "gh-pages": "^6.3.0",
     "isbot": "^5.1.31",
     "react": "^19.1.1",

@@ -7,6 +7,6 @@ export default defineConfig({
   /**
    * @see https://github.com/remix-run/react-router/issues/13446#issuecomment-2822107203
    */
-  base: '/refetti/',
+  base: '/react-confetti-kit/',
   plugins: [tailwindcss(), reactRouter(), tsconfigPaths()],
 })

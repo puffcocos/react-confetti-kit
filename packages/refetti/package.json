@@ -1,5 +1,5 @@
 {
-  "name": "refetti",
+  "name": "react-confetti-kit",
   "version": "0.1.0",
   "description": "A modern React confetti library built on canvas-confetti",
   "type": "module",

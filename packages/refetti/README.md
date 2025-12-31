@@ -1,4 +1,4 @@
-# Refetti
+# React Confetti Kit
 
 A modern React confetti library built on canvas-confetti with TypeScript support.
 
@@ -14,17 +14,17 @@ A modern React confetti library built on canvas-confetti with TypeScript support
 ## Installation
 
 ```bash
-npm install refetti
+npm install react-confetti-kit
 # or
-pnpm add refetti
+pnpm add react-confetti-kit
 # or
-yarn add refetti
+yarn add react-confetti-kit
 ```
 
 ## Usage
 
 ```tsx
-import { useConfetti } from 'refetti'
+import { useConfetti } from 'react-confetti-kit'
 
 function MyComponent() {
   const { fire } = useConfetti()

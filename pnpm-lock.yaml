@@ -32,15 +32,15 @@ importers:
       react:
         specifier: ^19.1.1
         version: 19.2.0
+      react-confetti-kit:
+        specifier: workspace:*
+        version: link:../../packages/refetti
       react-dom:
         specifier: ^19.1.1
         version: 19.2.0(react@19.2.0)
       react-router:
         specifier: ^7.9.2
         version: 7.9.6(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-      refetti:
-        specifier: workspace:*
-        version: link:../../packages/refetti
       svg-path-bbox:
         specifier: ^2.1.0
         version: 2.1.0

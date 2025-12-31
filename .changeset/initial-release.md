@@ -1,8 +1,8 @@
 ---
-"refetti": minor
+"react-confetti-kit": minor
 ---
 
-Initial release of refetti - A modern React confetti library
+Initial release of react-confetti-kit - A modern React confetti library
 
 Features:
 - Built on canvas-confetti with enhanced TypeScript support

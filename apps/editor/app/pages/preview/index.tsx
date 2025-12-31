@@ -997,7 +997,7 @@ export function PreviewPage() {
               <div className="text-xs text-gray-500">복사한 코드 실행</div>
             </div>
             <a
-              href="/refetti/example"
+              href="/react-confetti-kit/example"
               target="_blank"
               rel="noopener noreferrer"
               className="px-4 py-2 rounded-lg font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors"

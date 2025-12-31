@@ -32,7 +32,7 @@ pnpm run build        # Build for production (outputs to build/client and build/
 ### React Router Configuration
 
 - **SPA Mode**: The app runs in client-side only mode (`ssr: false` in react-router.config.ts)
-- **Base Path**: Configured for GitHub Pages deployment with basename `/refetti/`
+- **Base Path**: Configured for GitHub Pages deployment with basename `/react-confetti-kit/`
 - **Route Structure**: File-based routing defined in `app/routes.ts`
   - `/` - Main preview/editor page
   - `/example` - Example page

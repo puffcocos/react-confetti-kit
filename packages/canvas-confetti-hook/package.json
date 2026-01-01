@@ -29,14 +29,16 @@
   ],
   "author": "puffcocos",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/puffcocos/react-confetti-kit",
+    "directory": "packages/canvas-confetti-hook"
+  },
   "publishConfig": {
     "access": "public"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0"
-  },
-  "dependencies": {
-    "canvas-confetti": "^1.9.4"
   },
   "devDependencies": {
     "@types/canvas-confetti": "^1.9.0",

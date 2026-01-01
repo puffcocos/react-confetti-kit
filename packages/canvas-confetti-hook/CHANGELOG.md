@@ -1,5 +1,12 @@
 # canvas-confetti-hook
 
+## 0.2.1
+
+### Patch Changes
+
+- 59b4bc4: Fix GitHub Actions workflow permissions to allow changesets to commit and push version updates
+- 9ab93e2: Add npm provenance configuration for enhanced package security and trustworthiness
+
 ## 0.2.0
 
 ### Minor Changes

@@ -35,7 +35,8 @@
     "directory": "packages/canvas-confetti-hook"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0"
